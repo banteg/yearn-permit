@@ -8,6 +8,9 @@
   line-height: 1.5;
   text-rendering: optimizeLegibility;
 
+  margin: auto;
+  max-width: 60rem;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;

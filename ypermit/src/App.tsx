@@ -198,8 +198,7 @@ function App() {
                 domain: {
                   name: "Permit2",
                   chainId: 1n,
-                  verifyingContract:
-                    "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+                  verifyingContract: permit2,
                 },
                 types: {
                   PermitTransferFrom: [
@@ -234,16 +233,19 @@ function App() {
       </div>
       <div>
         <h2>send deposit</h2>
-        {permit.length ? 
-        <TxButton
-          label="deposit with permit"
-          payload={{
-            abi: ypermit_abi,
-            address: ypermit,
-            functionName: "deposit",
-            args: permit,
-          }}
-        ></TxButton> : <>no permit</>}
+        {permit.length ? (
+          <TxButton
+            label="deposit with permit"
+            payload={{
+              abi: ypermit_abi,
+              address: ypermit,
+              functionName: "deposit",
+              args: permit,
+            }}
+          ></TxButton>
+        ) : (
+          <>no permit</>
+        )}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </>
