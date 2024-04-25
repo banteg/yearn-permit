@@ -12,27 +12,23 @@ import {
   useWriteContract,
 } from "wagmi";
 import { permit2_abi, erc20_abi, registry_abi } from "./abi";
+import { formatEther, maxUint256 } from "viem";
 
-function TxButton({ token }) {
-  const query_client = useQueryClient()
+function TxButton({ label, payload }) {
+  const query_client = useQueryClient();
   const { data, isPending, writeContract } = useWriteContract();
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({ hash: data });
   async function submit() {
-    writeContract({
-      abi: erc20_abi,
-      address: token,
-      functionName: "deposit",
-      value: 10n ** 18n,
-    });
+    writeContract(payload);
   }
   useEffect(() => {
-    if (!isSuccess) return
-    query_client.invalidateQueries()
-  }, [isSuccess])
+    if (!isSuccess) return;
+    query_client.invalidateQueries();
+  }, [isSuccess]);
   return (
     <>
       <button onClick={submit} disabled={isPending || isLoading}>
-        wrap
+        {label}
       </button>
     </>
   );
@@ -49,8 +45,13 @@ function App() {
   const [token, setToken] = useState(
     "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
   );
-  const { data: results, status: multi_status } = useReadContracts({
+  const { data: results, isSuccess: multi_status } = useReadContracts({
     contracts: [
+      {
+        abi: erc20_abi,
+        address: token,
+        functionName: "symbol",
+      },
       {
         abi: erc20_abi,
         address: token,
@@ -69,13 +70,12 @@ function App() {
         functionName: "latestVault",
         args: [token],
       },
-      {
-        abi: erc20_abi,
-        address: token,
-        functionName: "symbol",
-      },
     ],
   });
+  const symbol = multi_status ? results[0].result : null;
+  const balance = multi_status ? results[1].result : null;
+  const allowance = multi_status ? results[2].result : null;
+  const latest_vault = multi_status ? results[3].result : null;
 
   return (
     <>
@@ -117,21 +117,33 @@ function App() {
       <div>
         <h2>permit2 allowance</h2>
         <div>
-          token: {multi_status === "success" && results[3].result?.toString()}
+          wrap:{" "}
+          <TxButton
+            label="wrap"
+            payload={{
+              abi: erc20_abi,
+              address: token,
+              functionName: "deposit",
+              value: 10n ** 18n,
+            }}
+          ></TxButton>
         </div>
         <div>
-          wrap: <TxButton token={token}></TxButton>
+          balance: {multi_status && formatEther(balance)} {symbol}
         </div>
-        <div>
-          balance: {multi_status === "success" && results[0].result?.toString()}
-        </div>
-        <div>
-          allowance:{" "}
-          {multi_status === "success" && results[1].result?.toString()}
-        </div>
-        <div>
-          vault: {multi_status === "success" && results[2].result?.toString()}
-        </div>
+        <div>allowance: {multi_status && formatEther(allowance)}</div>
+        {allowance === 0n && (
+          <TxButton
+            label="approve"
+            payload={{
+              abi: erc20_abi,
+              address: token,
+              functionName: "approve",
+              args: [permit2, maxUint256],
+            }}
+          ></TxButton>
+        )}
+        <div>vault: {multi_status && latest_vault}</div>
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </>
