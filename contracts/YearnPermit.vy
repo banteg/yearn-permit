@@ -39,9 +39,10 @@ def __init__():
 
 
 @external
-def deposit(token: address, amount: uint256, nonce: uint256, deadline: uint256, signature: Bytes[65]) -> uint256:
+def deposit(token: address, amount: uint256, deadline: uint256, signature: Bytes[65]) -> uint256:
     """
     @notice Deposit token into the latest official vault.
+    @dev Reuses deadline as nonce
     """
     vault: address = registry.latestVault(token)
     assert vault != empty(address)  # dev: no vault for this token
@@ -50,7 +51,7 @@ def deposit(token: address, amount: uint256, nonce: uint256, deadline: uint256, 
     permit2.permitTransferFrom(
         PermitTransferFrom({
             permitted: TokenPermissions({token: token, amount: amount}),
-            nonce: nonce,
+            nonce: deadline,
             deadline: deadline
         }),
         SignatureTransferDetails({to: self, requestedAmount: amount}),

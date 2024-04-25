@@ -41,9 +41,9 @@ def permit2():
 
 @pytest.fixture
 def make_permit():
-    def make(token, amount, spender, nonce, deadline):
+    def make(token, amount, spender, deadline):
         return PermitTransferFrom(
-            TokenPermissions(token, amount), spender, nonce, deadline
+            TokenPermissions(token, amount), spender, deadline, deadline
         )
 
     return make
