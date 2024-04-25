@@ -1,0 +1,5 @@
+eth-ape[recommended-plugins]
+setuptools
+ipython
+ruff
+eip712

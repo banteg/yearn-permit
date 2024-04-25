@@ -1,0 +1,13 @@
+foundry:
+  host: auto
+
+geth:
+  ethereum:
+    mainnet:
+      uri: http://127.0.0.1:8545
+
+
+ethereum:
+  default_network: mainnet-fork
+  mainnet-fork:
+    default_provider: foundry
