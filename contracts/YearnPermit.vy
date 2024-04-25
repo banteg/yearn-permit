@@ -44,7 +44,7 @@ def deposit(token: address, amount: uint256, nonce: uint256, deadline: uint256, 
     @notice Deposit token into the latest official vault.
     """
     vault: address = registry.latestVault(token)
-    assert vault != address(0)  # dev: no vault for this token
+    assert vault != empty(address)  # dev: no vault for this token
 
     # pull tokens using permit2
     permit2.permitTransferFrom(
