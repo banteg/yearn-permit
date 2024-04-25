@@ -1,5 +1,5 @@
 foundry:
-  host: auto
+  host: 127.0.0.1:9545
 
 geth:
   ethereum:
