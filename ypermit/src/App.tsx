@@ -6,12 +6,12 @@ import {
   useBlockNumber,
   useConnect,
   useDisconnect,
-  useReadContract,
   useReadContracts,
+  useSignTypedData,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { permit2_abi, erc20_abi, registry_abi } from "./abi";
+import { permit2_abi, erc20_abi, registry_abi, ypermit_abi } from "./abi";
 import { formatEther, maxUint256 } from "viem";
 
 function TxButton({ label, payload }) {
@@ -37,8 +37,10 @@ function TxButton({ label, payload }) {
 function App() {
   const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
   const registry = "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319";
+  const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
 
   const account = useAccount();
+  const [permit, setPermit] = useState([]);
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
   const { data: block } = useBlockNumber();
@@ -75,7 +77,44 @@ function App() {
   const symbol = multi_status ? results[0].result : null;
   const balance = multi_status ? results[1].result : null;
   const allowance = multi_status ? results[2].result : null;
-  const latest_vault = multi_status ? results[3].result : null;
+  const vault = multi_status ? results[3].result : null;
+
+  const { data: read_2, isSuccess: read_2_status } = useReadContracts({
+    contracts: [
+      {
+        abi: erc20_abi,
+        address: vault,
+        functionName: "symbol",
+      },
+      {
+        abi: erc20_abi,
+        address: vault,
+        functionName: "balanceOf",
+        args: [account.address],
+      },
+    ],
+  });
+
+  const vault_symbol = read_2_status ? read_2[0].result : null;
+  const vault_balance = read_2_status ? read_2[1].result : null;
+
+  const deadline = BigInt(parseInt(new Date().valueOf() / 1000 + 86400));
+
+  const { signTypedData } = useSignTypedData({
+    mutation: {
+      onSuccess(signature, variables) {
+        console.log("mut", signature, variables);
+        const args = [
+          variables.message.permitted.token,
+          variables.message.permitted.amount,
+          variables.message.deadline,
+          signature,
+        ];
+        setPermit(args);
+      },
+    },
+  });
+  console.log(permit);
 
   return (
     <>
@@ -143,7 +182,68 @@ function App() {
             }}
           ></TxButton>
         )}
-        <div>vault: {multi_status && latest_vault}</div>
+        <div>vault: {multi_status && vault}</div>
+        <div>
+          vault balance: {read_2_status && formatEther(vault_balance)}{" "}
+          {vault_symbol}
+        </div>
+      </div>
+      <div>
+        <h2>sign permit2</h2>
+        <pre>{permit.toString()}</pre>
+        <div>
+          <button
+            onClick={() =>
+              signTypedData({
+                domain: {
+                  name: "Permit2",
+                  chainId: 1n,
+                  verifyingContract:
+                    "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+                },
+                types: {
+                  PermitTransferFrom: [
+                    { name: "permitted", type: "TokenPermissions" },
+                    { name: "spender", type: "address" },
+                    { name: "nonce", type: "uint256" },
+                    { name: "deadline", type: "uint256" },
+                  ],
+                  TokenPermissions: [
+                    { name: "token", type: "address" },
+                    { name: "amount", type: "uint256" },
+                  ],
+                  EIP712Domain: [
+                    { name: "name", type: "string" },
+                    { name: "chainId", type: "uint256" },
+                    { name: "verifyingContract", type: "address" },
+                  ],
+                },
+                primaryType: "PermitTransferFrom",
+                message: {
+                  permitted: { token: token, amount: 10n ** 18n },
+                  spender: ypermit,
+                  nonce: deadline,
+                  deadline: deadline,
+                },
+              })
+            }
+          >
+            permit
+          </button>
+        </div>
+      </div>
+      <div>
+        <h2>send deposit</h2>
+        {permit.length ? 
+        <TxButton
+          label="deposit with permit"
+          payload={{
+            abi: ypermit_abi,
+            address: ypermit,
+            functionName: "deposit",
+            args: permit,
+          }}
+        ></TxButton> : <>no permit</>}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </>
