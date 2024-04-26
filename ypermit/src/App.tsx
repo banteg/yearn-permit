@@ -33,8 +33,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { config } from "./wagmi";
+
 import { Skeleton } from "./components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
+import { Separator } from "./components/ui/separator";
 
 const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const registries = [
@@ -64,13 +66,9 @@ function TxButton({ label, payload }) {
   }, [isSuccess]);
   return (
     <>
-      <button
-        onClick={submit}
-        disabled={isPending || isLoading}
-        className="border-2 border-slate-600 p-1 bg-slate-200"
-      >
+      <Button onClick={submit} disabled={isPending || isLoading}>
         {label}
-      </button>
+      </Button>
     </>
   );
 }
@@ -96,31 +94,107 @@ export function SelectToken({ tokens, on_select }) {
   );
 }
 
+function SelectTokenB({ tokens, selected_token, on_select }) {
+  return (
+    <div className="grid gap-2 grid-cols-4 ">
+      {tokens.map((token) => (
+        <div
+          className={cn(
+            "p-2 rounded-lg flex-1",
+            selected_token && token.address === selected_token.address
+              ? "bg-gray-100 border border-gray-300"
+              : "border"
+          )}
+          key={token.address}
+          onClick={(e) => on_select(token)}
+        >
+          <div className="flex space-x-2">
+            {token.permit2_allowance === maxUint256 ? (
+              <Rabbit className="text-green-500" />
+            ) : (
+              <Snail className="text-red-500" />
+            )}
+            <div>{token.symbol}</div>
+          </div>
+          <div className="text-xs text-gray-500 overflow-auto">
+            {token.balance_fmt}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function GrantApproval({ token }) {
   const account = useAccount();
+  if (!account.isConnected) return;
   const allowance = useReadContract({
     address: token.address,
     abi: erc20_abi,
     functionName: "allowance",
     args: [account.address, permit2],
   });
+  const writer = useWriteContract();
   if (!allowance.isSuccess) return;
   if (allowance.data == 0n) {
     return (
-      <div>
+      <div className="space-y-4">
         <Alert variant="destructive">
           <Snail className="h-4 w-4" />
           <AlertTitle>{token.symbol} needs approval</AlertTitle>
           <AlertDescription>
-            approve permit2 once to use gasless approvals with any supported
+            approve permit2 once to get gasless approvals across all supported
             contracts
           </AlertDescription>
         </Alert>
+        <div className="flex space-x-2 items-baseline">
+          <TxButton
+            label="approve"
+            payload={{
+              abi: erc20_abi,
+              address: token.address,
+              functionName: "approve",
+              args: [permit2, maxUint256],
+            }}
+          ></TxButton>
+          <div className="text-slate-500">
+            approve permit2 to pull your {token.symbol}
+          </div>
+        </div>
       </div>
     );
   } else {
     return <div>have approval</div>;
   }
+}
+
+function SignPermit() {
+  return (
+    <div className="space-y-4">
+      <Alert>
+        <Rabbit className="h-4 w-4" />
+        <AlertTitle>sign permit</AlertTitle>
+        <AlertDescription>
+          sign to allow the deposit contract to pull your tokens
+        </AlertDescription>
+      </Alert>
+      <div className="flex space-x-2 items-baseline">
+        <Button>sign</Button>
+        <div className="text-slate-500">
+          gassless permit to deposit into a vault
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MakeDeposit() {
+  return (
+    <div className="flex space-x-2 items-baseline">
+      <Button>deposit</Button>
+      <div className="text-slate-500">into yearn vault</div>
+    </div>
+  );
 }
 
 function App() {
@@ -266,16 +340,35 @@ function App() {
             abi: erc20_abi,
             functionName: "decimals",
           }))
+        )
+        .concat(
+          token_balances.map((token) => ({
+            address: token.address,
+            abi: erc20_abi,
+            functionName: "allowance",
+            args: [account.address, permit2],
+          }))
+        )
+        .concat(
+          token_balances.map((token) => ({
+            address: registries[1],
+            abi: registry_abi,
+            functionName: "latestVault",
+            args: [token.address],
+          }))
         );
       const metadata = await multicall(config, { contracts: payload });
       const meta_balances = [];
+      const skip = token_balances.length;
       for (const [i, token] of token_balances.entries()) {
-        const decimals = metadata[token_balances.length + i].result;
+        const decimals = metadata[skip + i].result;
         meta_balances.push({
           ...token,
           symbol: metadata[i].result,
           decimals: decimals,
           balance_fmt: formatUnits(token.balance, decimals),
+          permit2_allowance: metadata[skip * 2 + i].result,
+          vault: metadata[skip * 3 + i].result,
         });
       }
       set_user_tokens(meta_balances);
@@ -303,7 +396,15 @@ function App() {
           on_select={(token) => set_selected_token(token)}
         />
       </div>
+      <Separator />
 
+      <SelectTokenB
+        tokens={user_tokens}
+        selected_token={selected_token}
+        on_select={(token) => set_selected_token(token)}
+      />
+
+      <Separator />
       <div>
         {selected_token === null ? (
           <div className="text-xl text-slate-400">select a token first</div>
@@ -313,6 +414,13 @@ function App() {
           </>
         )}
       </div>
+
+      <Separator />
+      <SignPermit />
+      <Separator />
+      <MakeDeposit />
+
+      <Separator />
 
       {/* todo */}
       <div>
