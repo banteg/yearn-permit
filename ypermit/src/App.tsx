@@ -6,6 +6,7 @@ import {
   useBlockNumber,
   useConnect,
   useDisconnect,
+  useReadContract,
   useReadContracts,
   useSignTypedData,
   useWaitForTransactionReceipt,
@@ -13,6 +14,9 @@ import {
 } from "wagmi";
 import { permit2_abi, erc20_abi, registry_abi, ypermit_abi } from "./abi";
 import { formatEther, maxUint256 } from "viem";
+import { Button, ButtonLoading } from "@/components/ui/button";
+import { call, multicall, readContract } from "@wagmi/core";
+import { config } from "./wagmi";
 
 function TxButton({ label, payload }) {
   const query_client = useQueryClient();
@@ -27,7 +31,11 @@ function TxButton({ label, payload }) {
   }, [isSuccess]);
   return (
     <>
-      <button onClick={submit} disabled={isPending || isLoading}>
+      <button
+        onClick={submit}
+        disabled={isPending || isLoading}
+        className="border-2 border-slate-600 p-1 bg-slate-200"
+      >
         {label}
       </button>
     </>
@@ -36,8 +44,14 @@ function TxButton({ label, payload }) {
 
 function App() {
   const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
-  const registry = "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319";
+  const registries = [
+    "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
+    "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
+  ];
   const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
+
+  const [supported_tokens, set_supported_tokens] = useState([]);
+  const [user_tokens, set_user_tokens] = useState([]);
 
   const account = useAccount();
   const [permit, setPermit] = useState([]);
@@ -66,18 +80,18 @@ function App() {
         functionName: "allowance",
         args: [account.address, permit2],
       },
-      {
-        abi: registry_abi,
-        address: registry,
-        functionName: "latestVault",
-        args: [token],
-      },
+      // {
+      //   abi: registry_abi,
+      //   address: registry,
+      //   functionName: "latestVault",
+      //   args: [token],
+      // },
     ],
   });
   const symbol = multi_status ? results[0].result : null;
   const balance = multi_status ? results[1].result : null;
   const allowance = multi_status ? results[2].result : null;
-  const vault = multi_status ? results[3].result : null;
+  const vault = null; // multi_status ? results[3].result : null;
 
   const { data: read_2, isSuccess: read_2_status } = useReadContracts({
     contracts: [
@@ -114,12 +128,57 @@ function App() {
       },
     },
   });
-  console.log(permit);
+
+  useEffect(() => {
+    async function fetch_supported_tokens() {
+      // registry.numTokens() for each registry
+      const num_tokens = await multicall(config, {
+        contracts: registries.map((registry) => ({
+          address: registry,
+          abi: registry_abi,
+          functionName: "numTokens",
+        })),
+      });
+      // registry.tokens(n) for each token in each registry
+      let payload = [];
+      for (const [i, registry] of registries.entries()) {
+        const token_range = [...Array(parseInt(num_tokens[i].result)).keys()]
+        for (const j of token_range) {
+          payload.push({
+            address: registry,
+            abi: registry_abi,
+            functionName: "tokens",
+            args: [j],
+          });
+        }
+      }
+      let tokens = await multicall(config, { contracts: payload });
+      set_supported_tokens(tokens.map((res) => res.result));
+      console.log("fetched", tokens.length, 'tokens');
+    }
+
+    fetch_supported_tokens();
+  }, []);
+
+  // useEffect(() => {
+  //   console.log('account changed')
+  //   set_user_tokens([])
+  //   async function fetch_user_tokens() {
+  //     const payloads = supported_tokens.map(token => ({
+  //       address: token, abi: erc20_abi, functionName: "balanceOf", args: [account.address]
+  //     }))
+  //     console.log(payloads)
+  //     const balances = await multicall(config, { contracts: payloads });
+  //     console.log(balances.filter(res => res.result != 0n))
+  //   }
+  //   fetch_user_tokens()
+  // }, [supported_tokens, account.address])
 
   return (
-    <>
+    <div className="p-8">
       <div>
-        <h2>block {block?.toString()}</h2>
+        <h2 className="text-3xl">block {block?.toString()}</h2>
+        <div className="text-xl">supports {supported_tokens.length} tokens</div>
       </div>
       <div>
         <h2>Account</h2>
@@ -248,7 +307,7 @@ function App() {
         )}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
-    </>
+    </div>
   );
 }
 
