@@ -142,7 +142,7 @@ function App() {
       // registry.tokens(n) for each token in each registry
       let payload = [];
       for (const [i, registry] of registries.entries()) {
-        const token_range = [...Array(parseInt(num_tokens[i].result)).keys()]
+        const token_range = [...Array(parseInt(num_tokens[i].result)).keys()];
         for (const j of token_range) {
           payload.push({
             address: registry,
@@ -154,31 +154,39 @@ function App() {
       }
       let tokens = await multicall(config, { contracts: payload });
       set_supported_tokens(tokens.map((res) => res.result));
-      console.log("fetched", tokens.length, 'tokens');
+      console.log("fetched", tokens.length, "tokens");
     }
 
     fetch_supported_tokens();
   }, []);
 
-  // useEffect(() => {
-  //   console.log('account changed')
-  //   set_user_tokens([])
-  //   async function fetch_user_tokens() {
-  //     const payloads = supported_tokens.map(token => ({
-  //       address: token, abi: erc20_abi, functionName: "balanceOf", args: [account.address]
-  //     }))
-  //     console.log(payloads)
-  //     const balances = await multicall(config, { contracts: payloads });
-  //     console.log(balances.filter(res => res.result != 0n))
-  //   }
-  //   fetch_user_tokens()
-  // }, [supported_tokens, account.address])
+  useEffect(() => {
+    set_user_tokens([]);
+    async function fetch_user_tokens() {
+      const payloads = supported_tokens.map((token) => ({
+        address: token,
+        abi: erc20_abi,
+        functionName: "balanceOf",
+        args: [account.address],
+      }));
+      const balances = await multicall(config, { contracts: payloads });
+      let token_balances = []
+      for (const [i, token] of supported_tokens.entries()) {
+        if (balances[i].result != 0n) {
+          token_balances.push({token: token, balance: balances[i].result})
+        }
+      }
+      set_user_tokens(token_balances)
+      console.log('fetched', token_balances.length, 'user balances')
+    }
+    fetch_user_tokens();
+  }, [supported_tokens, account.address]);
 
   return (
     <div className="p-8">
       <div>
         <h2 className="text-3xl">block {block?.toString()}</h2>
-        <div className="text-xl">supports {supported_tokens.length} tokens</div>
+        <div className="text-xl">supports {supported_tokens.length} tokens, you have {user_tokens.length} tokens</div>
       </div>
       <div>
         <h2>Account</h2>
