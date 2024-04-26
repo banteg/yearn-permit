@@ -13,9 +13,25 @@ import {
   useWriteContract,
 } from "wagmi";
 import { permit2_abi, erc20_abi, registry_abi, ypermit_abi } from "./abi";
-import { formatEther, maxUint256 } from "viem";
+import { formatEther, maxUint256, formatUnits } from "viem";
 import { Button, ButtonLoading } from "@/components/ui/button";
 import { call, multicall, readContract } from "@wagmi/core";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandShortcut,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { config } from "./wagmi";
 
 function TxButton({ label, payload }) {
@@ -42,6 +58,24 @@ function TxButton({ label, payload }) {
   );
 }
 
+export function SelectToken({ tokens }) {
+  return (
+    <>
+      <Command>
+        <CommandInput placeholder="select token to deposit" />
+        <CommandList>
+          {tokens.map((token) => (
+            <CommandItem>
+              <span>{token.symbol}</span>
+              <CommandShortcut>{token.balance_fmt}</CommandShortcut>
+            </CommandItem>
+          ))}
+        </CommandList>
+      </Command>
+    </>
+  );
+}
+
 function App() {
   const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
   const registries = [
@@ -50,8 +84,8 @@ function App() {
   ];
   const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
 
-  const [supported_tokens, set_supported_tokens] = useState([]);
-  const [user_tokens, set_user_tokens] = useState([]);
+  const [supported_tokens, set_supported_tokens] = useState([]); // [address]
+  const [user_tokens, set_user_tokens] = useState([]); // [{token: address, balance: uint}]
 
   const account = useAccount();
   const [permit, setPermit] = useState([]);
@@ -163,31 +197,66 @@ function App() {
   useEffect(() => {
     set_user_tokens([]);
     async function fetch_user_tokens() {
-      const payloads = supported_tokens.map((token) => ({
+      // check balances for all supported tokens
+      let payload = supported_tokens.map((token) => ({
         address: token,
         abi: erc20_abi,
         functionName: "balanceOf",
         args: [account.address],
       }));
-      const balances = await multicall(config, { contracts: payloads });
-      let token_balances = []
+      const balances = await multicall(config, { contracts: payload });
+      // filter by non-zero balances
+      let token_balances = [];
       for (const [i, token] of supported_tokens.entries()) {
         if (balances[i].result != 0n) {
-          token_balances.push({token: token, balance: balances[i].result})
+          token_balances.push({ token: token, balance: balances[i].result });
         }
       }
-      set_user_tokens(token_balances)
-      console.log('fetched', token_balances.length, 'user balances')
+      // fetch additional metadata like symbol and decimals
+      payload = token_balances
+        .map((token) => ({
+          address: token.token,
+          abi: erc20_abi,
+          functionName: "symbol",
+        }))
+        .concat(
+          token_balances.map((token) => ({
+            address: token.token,
+            abi: erc20_abi,
+            functionName: "decimals",
+          }))
+        );
+      const metadata = await multicall(config, { contracts: payload });
+      const meta_balances = [];
+      for (const [i, token] of token_balances.entries()) {
+        const decimals = metadata[token_balances.length + i].result;
+        meta_balances.push({
+          ...token,
+          symbol: metadata[i].result,
+          decimals: decimals,
+          balance_fmt: formatUnits(token.balance, decimals),
+        });
+      }
+      set_user_tokens(meta_balances);
+      console.log("fetched", meta_balances.length, "user balances");
     }
     fetch_user_tokens();
   }, [supported_tokens, account.address]);
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-4 flex flex-col w-[40rem] mx-auto">
       <div>
         <h2 className="text-3xl">block {block?.toString()}</h2>
-        <div className="text-xl">supports {supported_tokens.length} tokens, you have {user_tokens.length} tokens</div>
+        <div className="text-xl">
+          supports {supported_tokens.length} tokens, you have{" "}
+          {user_tokens.length} tokens
+        </div>
       </div>
+      <div>
+        <SelectToken tokens={user_tokens} />
+      </div>
+
+      {/* todo */}
       <div>
         <h2>Account</h2>
 
