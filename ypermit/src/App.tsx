@@ -16,7 +16,7 @@ import { permit2_abi, erc20_abi, registry_abi, ypermit_abi } from "./abi";
 import { formatEther, maxUint256, formatUnits } from "viem";
 import { Button, ButtonLoading } from "@/components/ui/button";
 import { call, multicall, readContract } from "@wagmi/core";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Rabbit, Snail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -33,6 +33,23 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { config } from "./wagmi";
+import { Skeleton } from "./components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
+
+const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
+const registries = [
+  "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
+  "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
+];
+const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
+
+function Logo() {
+  return (
+    <div className="flex space-x-2 items-end">
+      <Rabbit className="h-[32px]" /> <div className="text-2xl">yearn</div>
+    </div>
+  );
+}
 
 function TxButton({ label, payload }) {
   const query_client = useQueryClient();
@@ -58,14 +75,17 @@ function TxButton({ label, payload }) {
   );
 }
 
-export function SelectToken({ tokens }) {
+export function SelectToken({ tokens, on_select }) {
   return (
     <>
-      <Command>
+      <Command className="rounded-lg border shadow-md">
         <CommandInput placeholder="select token to deposit" />
         <CommandList>
           {tokens.map((token) => (
-            <CommandItem>
+            <CommandItem
+              key={token.address}
+              onSelect={(value) => on_select(token)}
+            >
               <span>{token.symbol}</span>
               <CommandShortcut>{token.balance_fmt}</CommandShortcut>
             </CommandItem>
@@ -76,16 +96,37 @@ export function SelectToken({ tokens }) {
   );
 }
 
-function App() {
-  const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
-  const registries = [
-    "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
-    "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
-  ];
-  const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
+export function GrantApproval({ token }) {
+  const account = useAccount();
+  const allowance = useReadContract({
+    address: token.address,
+    abi: erc20_abi,
+    functionName: "allowance",
+    args: [account.address, permit2],
+  });
+  if (!allowance.isSuccess) return;
+  if (allowance.data == 0n) {
+    return (
+      <div>
+        <Alert variant="destructive">
+          <Snail className="h-4 w-4" />
+          <AlertTitle>{token.symbol} needs approval</AlertTitle>
+          <AlertDescription>
+            approve permit2 once to use gasless approvals with any supported
+            contracts
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  } else {
+    return <div>have approval</div>;
+  }
+}
 
+function App() {
   const [supported_tokens, set_supported_tokens] = useState([]); // [address]
   const [user_tokens, set_user_tokens] = useState([]); // [{token: address, balance: uint}]
+  const [selected_token, set_selected_token] = useState(null);
 
   const account = useAccount();
   const [permit, setPermit] = useState([]);
@@ -209,19 +250,19 @@ function App() {
       let token_balances = [];
       for (const [i, token] of supported_tokens.entries()) {
         if (balances[i].result != 0n) {
-          token_balances.push({ token: token, balance: balances[i].result });
+          token_balances.push({ address: token, balance: balances[i].result });
         }
       }
       // fetch additional metadata like symbol and decimals
       payload = token_balances
         .map((token) => ({
-          address: token.token,
+          address: token.address,
           abi: erc20_abi,
           functionName: "symbol",
         }))
         .concat(
           token_balances.map((token) => ({
-            address: token.token,
+            address: token.address,
             abi: erc20_abi,
             functionName: "decimals",
           }))
@@ -245,15 +286,32 @@ function App() {
 
   return (
     <div className="p-8 space-y-4 flex flex-col w-[40rem] mx-auto">
+      <Logo />
       <div>
-        <h2 className="text-3xl">block {block?.toString()}</h2>
-        <div className="text-xl">
-          supports {supported_tokens.length} tokens, you have{" "}
-          {user_tokens.length} tokens
-        </div>
+        {supported_tokens.length > 0 ? (
+          <div className="text-xl">
+            supports {supported_tokens.length} tokens, you have{" "}
+            {user_tokens.length} tokens
+          </div>
+        ) : (
+          <Skeleton className="w-[280px] h-[28px]" />
+        )}
       </div>
       <div>
-        <SelectToken tokens={user_tokens} />
+        <SelectToken
+          tokens={user_tokens}
+          on_select={(token) => set_selected_token(token)}
+        />
+      </div>
+
+      <div>
+        {selected_token === null ? (
+          <div className="text-xl text-slate-400">select a token first</div>
+        ) : (
+          <>
+            <GrantApproval token={selected_token} />
+          </>
+        )}
       </div>
 
       {/* todo */}
