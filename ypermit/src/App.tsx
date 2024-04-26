@@ -12,7 +12,7 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { permit2_abi, erc20_abi, registry_abi, ypermit_abi } from "./abi";
+import { permit2_abi, erc20_abi, registry_abi, ypermit_abi, usdt_abi } from "./abi";
 import { formatEther, maxUint256, formatUnits } from "viem";
 import { Button, ButtonLoading } from "@/components/ui/button";
 import { call, multicall, readContract } from "@wagmi/core";
@@ -33,10 +33,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { config } from "./wagmi";
-
+import { toast } from "sonner";
 import { Skeleton } from "./components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { Separator } from "./components/ui/separator";
+import { Toaster } from "./components/ui/sonner";
 
 const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const registries = [
@@ -44,6 +45,9 @@ const registries = [
   "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
 ];
 const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
+const erc20_abi_overrides = {
+  "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
+}
 
 function Logo() {
   return (
@@ -55,7 +59,18 @@ function Logo() {
 
 function TxButton({ label, payload }) {
   const query_client = useQueryClient();
-  const { data, isPending, writeContract } = useWriteContract();
+  const { data, isPending, writeContract } = useWriteContract({
+    mutation: {
+      onError(error, variables, context) {
+        toast(
+          <div>
+            <div className="font-bold">{error.name}</div>
+            <div className="text-xs">{error.message}</div>
+          </div>
+        );
+      },
+    },
+  });
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({ hash: data });
   async function submit() {
     writeContract(payload);
@@ -110,9 +125,9 @@ function SelectTokenB({ tokens, selected_token, on_select }) {
         >
           <div className="flex space-x-2">
             {token.permit2_allowance === maxUint256 ? (
-              <Rabbit className="text-green-500" />
+              <Rabbit className="text-green-500 w-5" />
             ) : (
-              <Snail className="text-red-500" />
+              <Snail className="text-red-500 w-5" />
             )}
             <div>{token.symbol}</div>
           </div>
@@ -151,7 +166,7 @@ export function GrantApproval({ token }) {
           <TxButton
             label="approve"
             payload={{
-              abi: erc20_abi,
+              abi: erc20_abi_overrides[token.address] ?? erc20_abi,
               address: token.address,
               functionName: "approve",
               args: [permit2, maxUint256],
@@ -383,20 +398,23 @@ function App() {
       <div>
         {supported_tokens.length > 0 ? (
           <div className="text-xl">
-            supports {supported_tokens.length} tokens, you have{" "}
-            {user_tokens.length} tokens
+            supports {supported_tokens.length} tokens
+            {user_tokens.length > 0 ? (
+              <>, you have {user_tokens.length} tokens</>
+            ) : (
+              <></>
+            )}
           </div>
         ) : (
           <Skeleton className="w-[280px] h-[28px]" />
         )}
       </div>
       <div>
-        <SelectToken
+        {/* <SelectToken
           tokens={user_tokens}
           on_select={(token) => set_selected_token(token)}
-        />
+        /> */}
       </div>
-      <Separator />
 
       <SelectTokenB
         tokens={user_tokens}
@@ -550,6 +568,7 @@ function App() {
         )}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
+      <Toaster />
     </div>
   );
 }
