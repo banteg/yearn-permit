@@ -19,10 +19,17 @@ import {
   ypermit_abi,
   usdt_abi,
 } from "./abi";
-import { formatEther, maxUint256, formatUnits, maxUint96 } from "viem";
+import { formatEther, maxUint256, formatUnits, maxUint96, slice } from "viem";
 import { Button, ButtonLoading } from "@/components/ui/button";
 import { call, multicall, readContract } from "@wagmi/core";
-import { Check, ChevronsUpDown, Rabbit, Snail, Ticket } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Rabbit,
+  Rocket,
+  Snail,
+  Ticket,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -151,7 +158,7 @@ function SelectTokenB({ tokens, selected_token, on_select }) {
       allowance: resp.data[tokens.length + i].result,
     });
   }
-  console.log(data)
+  console.log(data);
 
   return (
     <div className="grid gap-2 grid-cols-4 ">
@@ -222,8 +229,6 @@ export function GrantApproval({ token }) {
         </div>
       </div>
     );
-  } else {
-    return <div>have approval</div>;
   }
 }
 
@@ -323,8 +328,8 @@ function MakeDeposit() {
 }
 
 function App() {
-  const [supported_tokens, set_supported_tokens] = useState([]); // [address]
-  const [user_tokens, set_user_tokens] = useState([]); // [{token: address, balance: uint}]
+  const [supported_tokens, set_supported_tokens] = useState(null); // [address]
+  const [user_tokens, set_user_tokens] = useState(null); // [{token: address, balance: uint}]
   const [selected_token, set_selected_token] = useState(null);
 
   const account = useAccount();
@@ -418,7 +423,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    set_user_tokens([]);
+    if (supported_tokens === null) return;
+    set_user_tokens(null);
     async function fetch_user_tokens() {
       // check balances for all supported tokens
       let payload = supported_tokens.map((token) => ({
@@ -477,34 +483,41 @@ function App() {
   return (
     <div className="p-8 space-y-4 flex flex-col w-[40rem] mx-auto">
       <Logo />
-      <div>
-        {supported_tokens.length > 0 ? (
+      {supported_tokens ? (
+        <div className="text-xl">
+          <span>
+            supports {supported_tokens.length} tokens
+            {user_tokens !== null ? (
+              <span>, you have {user_tokens.length} tokens</span>
+            ) : (
+              <span>, loading your tokens…</span>
+            )}
+          </span>
+        </div>
+      ) : (
+        <div className="text-xl">loading from registry…</div>
+      )}
+      {/* <div>
+        {supported_tokens !== null ? (
           <div className="text-xl">
             supports {supported_tokens.length} tokens
-            {user_tokens.length > 0 ? (
+            {user_tokens !== null ? (
               <>, you have {user_tokens.length} tokens</>
             ) : (
               <></>
             )}
           </div>
-        ) : (
-          <Skeleton className="w-[280px] h-[28px]" />
-        )}
-      </div>
-      <div>
-        {/* <SelectToken
+        )} */}
+      {/* </div> */}
+
+      {user_tokens !== null && (
+        <SelectTokenB
           tokens={user_tokens}
+          selected_token={selected_token}
           on_select={(token) => set_selected_token(token)}
-        /> */}
-      </div>
+        />
+      )}
 
-      <SelectTokenB
-        tokens={user_tokens}
-        selected_token={selected_token}
-        on_select={(token) => set_selected_token(token)}
-      />
-
-      <Separator />
       <div>
         {selected_token === null ? (
           <div className="text-xl text-slate-400">select a token first</div>
@@ -515,14 +528,16 @@ function App() {
         )}
       </div>
 
-      <Separator />
-      <SignPermit
-        token={selected_token}
-        spender={ypermit}
-        setPermit={setPermit}
-        permit={permit}
-      />
-      <Separator />
+      {selected_token ? (
+        <SignPermit
+          token={selected_token}
+          spender={ypermit}
+          setPermit={setPermit}
+          permit={permit}
+        />
+      ) : (
+        <div />
+      )}
       <MakeDeposit />
 
       <Separator />
