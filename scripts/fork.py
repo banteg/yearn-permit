@@ -1,7 +1,7 @@
 from enum import IntEnum
 from operator import itemgetter
 
-from ape import Contract, accounts, chain, project
+from ape import Contract, accounts, chain, project, convert
 from ape_ethereum.multicall import Call
 from dpack.ape import load
 from eth_abi import encode
@@ -132,14 +132,15 @@ def main():
     }
     print(best_pools)
 
-    planner = Planner()
     ONE = 10**18
     wrap_amount = len(best_pools) * ONE
-    planner.add(Command.WRAP_ETH, str(uniswap.universal_router), wrap_amount)
+
+    planner = Planner()
+    planner.wrap_eth(str(uniswap.universal_router), wrap_amount)
+
     for token, fee in best_pools.items():
-        planner.add(
-            Command.V3_SWAP_EXACT_IN, str(dev), ONE, 0, [str(weth), fee, token], False
-        )
+        planner.v3_swap_exact_in(str(dev), ONE, 0, [str(weth), fee, token], False)
+
     uniswap.universal_router.execute(*planner.build(), value=wrap_amount, sender=dev)
 
     call = Call()
