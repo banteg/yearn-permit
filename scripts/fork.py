@@ -1,13 +1,14 @@
+from enum import IntEnum
 from operator import itemgetter
-from ape import project, accounts, chain, Contract
+
+from ape import Contract, accounts, chain, project
 from ape_ethereum.multicall import Call
 from dpack.ape import load
-from enum import IntEnum
-from regex import P
-from rich import print
 from eth_abi import encode
 from eth_abi.packed import encode_packed
+from rich import print
 from toolz import groupby
+from uniswap.universal_router import Command, Planner
 
 uniswap = load("uniswap-v3.dpack.json")
 
@@ -131,31 +132,15 @@ def main():
     }
     print(best_pools)
 
-    commands = []
-    inputs = []
-
-    one = 10**18
-    wrap_amount = len(best_pools) * one
-    commands.append(Commands.WRAP_ETH)
-    inputs.append(
-        encode(["address", "uint256"], [str(uniswap.universal_router), wrap_amount])
-    )
-
+    planner = Planner()
+    ONE = 10**18
+    wrap_amount = len(best_pools) * ONE
+    planner.add(Command.WRAP_ETH, str(uniswap.universal_router), wrap_amount)
     for token, fee in best_pools.items():
-        commands.append(Commands.V3_SWAP_EXACT_IN)
-        path = encode_packed(["address", "uint24", "address"], [str(weth), fee, token])
-        inputs.append(
-            encode(
-                ["address", "uint256", "uint256", "bytes", "bool"],
-                [str(dev), one, 0, path, False],
-            )
+        planner.add(
+            Command.V3_SWAP_EXACT_IN, str(dev), ONE, 0, [str(weth), fee, token], False
         )
-
-    print(f"encoded {len(commands)} commands")
-    tx = uniswap.universal_router.execute(
-        bytes(commands), inputs, value=wrap_amount, sender=dev
-    )
-    # tx.show_trace()
+    uniswap.universal_router.execute(*planner.build(), value=wrap_amount, sender=dev)
 
     call = Call()
     for token in best_pools:

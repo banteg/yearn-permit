@@ -3,3 +3,6 @@ setuptools
 ipython
 ruff
 eip712
+dpack-py
+flit
+git+https://github.com/banteg/universal-router.git
