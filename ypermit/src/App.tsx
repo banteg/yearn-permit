@@ -12,11 +12,17 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { permit2_abi, erc20_abi, registry_abi, ypermit_abi, usdt_abi } from "./abi";
-import { formatEther, maxUint256, formatUnits } from "viem";
+import {
+  permit2_abi,
+  erc20_abi,
+  registry_abi,
+  ypermit_abi,
+  usdt_abi,
+} from "./abi";
+import { formatEther, maxUint256, formatUnits, maxUint96 } from "viem";
 import { Button, ButtonLoading } from "@/components/ui/button";
 import { call, multicall, readContract } from "@wagmi/core";
-import { Check, ChevronsUpDown, Rabbit, Snail } from "lucide-react";
+import { Check, ChevronsUpDown, Rabbit, Snail, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -47,7 +53,7 @@ const registries = [
 const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
 const erc20_abi_overrides = {
   "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
-}
+};
 
 function Logo() {
   return (
@@ -110,9 +116,46 @@ export function SelectToken({ tokens, on_select }) {
 }
 
 function SelectTokenB({ tokens, selected_token, on_select }) {
+  const account = useAccount();
+  console.log("account", account, account.address);
+
+  const payload = tokens
+    .map((token) => ({
+      address: token.address,
+      abi: erc20_abi,
+      functionName: "balanceOf",
+      args: [account.address],
+    }))
+    .concat(
+      tokens.map((token) => ({
+        address: token.address,
+        abi: erc20_abi,
+        functionName: "allowance",
+        args: [account.address, permit2],
+      }))
+    );
+  console.log("tokens", tokens.length);
+  const resp = useReadContracts({ contracts: payload });
+  if (!resp.isFetched) return <>no tokens</>;
+  const balances = resp.data?.slice(0, tokens.length).map((res) => res.result);
+  const allowances = resp.data
+    ?.slice(tokens.length, tokens.length * 2)
+    .map((res) => res.result);
+  console.log(balances);
+  console.log(allowances);
+  const data = [];
+  for (const [i, token] of tokens.entries()) {
+    data.push({
+      ...token,
+      balance: resp.data[i].result,
+      allowance: resp.data[tokens.length + i].result,
+    });
+  }
+  console.log(data)
+
   return (
     <div className="grid gap-2 grid-cols-4 ">
-      {tokens.map((token) => (
+      {data.map((token) => (
         <div
           className={cn(
             "p-2 rounded-lg flex-1",
@@ -124,7 +167,8 @@ function SelectTokenB({ tokens, selected_token, on_select }) {
           onClick={(e) => on_select(token)}
         >
           <div className="flex space-x-2">
-            {token.permit2_allowance === maxUint256 ? (
+            {/* some tokens like uni limit max allowance to 96 bits */}
+            {token.allowance >= maxUint96 ? (
               <Rabbit className="text-green-500 w-5" />
             ) : (
               <Snail className="text-red-500 w-5" />
@@ -132,7 +176,7 @@ function SelectTokenB({ tokens, selected_token, on_select }) {
             <div>{token.symbol}</div>
           </div>
           <div className="text-xs text-gray-500 overflow-auto">
-            {token.balance_fmt}
+            {formatUnits(token.balance, token.decimals)}
           </div>
         </div>
       ))}
@@ -183,18 +227,84 @@ export function GrantApproval({ token }) {
   }
 }
 
-function SignPermit() {
+function SignPermit({ token, spender, permit, setPermit }) {
+  const { signTypedData } = useSignTypedData({
+    mutation: {
+      onSuccess(signature, variables) {
+        console.log("mut", signature, variables);
+        const args = [
+          variables.message.permitted.token,
+          variables.message.permitted.amount,
+          variables.message.deadline,
+          signature,
+        ];
+        setPermit(args);
+      },
+      onError(error, variables, context) {
+        toast(error.message);
+      },
+    },
+  });
+
+  const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));
+
   return (
     <div className="space-y-4">
-      <Alert>
-        <Rabbit className="h-4 w-4" />
-        <AlertTitle>sign permit</AlertTitle>
-        <AlertDescription>
-          sign to allow the deposit contract to pull your tokens
-        </AlertDescription>
-      </Alert>
+      {permit.length ? (
+        <Alert>
+          <Ticket className="h-4 w-4" />
+          <AlertTitle>have permit</AlertTitle>
+          <AlertDescription className="overflow-clip">
+            {permit[permit.length - 1]}
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert>
+          <Rabbit className="h-4 w-4" />
+          <AlertTitle>sign permit</AlertTitle>
+          <AlertDescription>
+            sign to allow the deposit contract to pull your tokens
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="flex space-x-2 items-baseline">
-        <Button>sign</Button>
+        <Button
+          onClick={() =>
+            signTypedData({
+              domain: {
+                name: "Permit2",
+                chainId: 1n,
+                verifyingContract: permit2,
+              },
+              types: {
+                PermitTransferFrom: [
+                  { name: "permitted", type: "TokenPermissions" },
+                  { name: "spender", type: "address" },
+                  { name: "nonce", type: "uint256" },
+                  { name: "deadline", type: "uint256" },
+                ],
+                TokenPermissions: [
+                  { name: "token", type: "address" },
+                  { name: "amount", type: "uint256" },
+                ],
+                EIP712Domain: [
+                  { name: "name", type: "string" },
+                  { name: "chainId", type: "uint256" },
+                  { name: "verifyingContract", type: "address" },
+                ],
+              },
+              primaryType: "PermitTransferFrom",
+              message: {
+                permitted: { token: token.address, amount: 10n ** 18n },
+                spender: spender,
+                nonce: deadline,
+                deadline: deadline,
+              },
+            })
+          }
+        >
+          sign
+        </Button>
         <div className="text-slate-500">
           gassless permit to deposit into a vault
         </div>
@@ -276,23 +386,6 @@ function App() {
   const vault_symbol = read_2_status ? read_2[0].result : null;
   const vault_balance = read_2_status ? read_2[1].result : null;
 
-  const deadline = BigInt(parseInt(new Date().valueOf() / 1000 + 86400));
-
-  const { signTypedData } = useSignTypedData({
-    mutation: {
-      onSuccess(signature, variables) {
-        console.log("mut", signature, variables);
-        const args = [
-          variables.message.permitted.token,
-          variables.message.permitted.amount,
-          variables.message.deadline,
-          signature,
-        ];
-        setPermit(args);
-      },
-    },
-  });
-
   useEffect(() => {
     async function fetch_supported_tokens() {
       // registry.numTokens() for each registry
@@ -358,14 +451,6 @@ function App() {
         )
         .concat(
           token_balances.map((token) => ({
-            address: token.address,
-            abi: erc20_abi,
-            functionName: "allowance",
-            args: [account.address, permit2],
-          }))
-        )
-        .concat(
-          token_balances.map((token) => ({
             address: registries[1],
             abi: registry_abi,
             functionName: "latestVault",
@@ -376,14 +461,11 @@ function App() {
       const meta_balances = [];
       const skip = token_balances.length;
       for (const [i, token] of token_balances.entries()) {
-        const decimals = metadata[skip + i].result;
         meta_balances.push({
           ...token,
           symbol: metadata[i].result,
-          decimals: decimals,
-          balance_fmt: formatUnits(token.balance, decimals),
-          permit2_allowance: metadata[skip * 2 + i].result,
-          vault: metadata[skip * 3 + i].result,
+          decimals: metadata[skip + i].result,
+          vault: metadata[skip * 2 + i].result,
         });
       }
       set_user_tokens(meta_balances);
@@ -434,7 +516,12 @@ function App() {
       </div>
 
       <Separator />
-      <SignPermit />
+      <SignPermit
+        token={selected_token}
+        spender={ypermit}
+        setPermit={setPermit}
+        permit={permit}
+      />
       <Separator />
       <MakeDeposit />
 
@@ -508,49 +595,7 @@ function App() {
           {vault_symbol}
         </div>
       </div>
-      <div>
-        <h2>sign permit2</h2>
-        <pre>{permit.toString()}</pre>
-        <div>
-          <button
-            onClick={() =>
-              signTypedData({
-                domain: {
-                  name: "Permit2",
-                  chainId: 1n,
-                  verifyingContract: permit2,
-                },
-                types: {
-                  PermitTransferFrom: [
-                    { name: "permitted", type: "TokenPermissions" },
-                    { name: "spender", type: "address" },
-                    { name: "nonce", type: "uint256" },
-                    { name: "deadline", type: "uint256" },
-                  ],
-                  TokenPermissions: [
-                    { name: "token", type: "address" },
-                    { name: "amount", type: "uint256" },
-                  ],
-                  EIP712Domain: [
-                    { name: "name", type: "string" },
-                    { name: "chainId", type: "uint256" },
-                    { name: "verifyingContract", type: "address" },
-                  ],
-                },
-                primaryType: "PermitTransferFrom",
-                message: {
-                  permitted: { token: token, amount: 10n ** 18n },
-                  spender: ypermit,
-                  nonce: deadline,
-                  deadline: deadline,
-                },
-              })
-            }
-          >
-            permit
-          </button>
-        </div>
-      </div>
+
       <div>
         <h2>send deposit</h2>
         {permit.length ? (
