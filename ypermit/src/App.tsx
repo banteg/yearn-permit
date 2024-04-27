@@ -25,6 +25,7 @@ import { call, multicall, readContract } from "@wagmi/core";
 import {
   Check,
   ChevronsUpDown,
+  LoaderCircle,
   Rabbit,
   Rocket,
   Snail,
@@ -67,6 +68,12 @@ function Logo() {
     <div className="flex space-x-2 items-end">
       <Rabbit className="h-[32px]" /> <div className="text-2xl">yearn</div>
     </div>
+  );
+}
+
+function LoadingBunny() {
+  return (
+    <Rabbit className="text-violet-500 inline animate-wiggle h-[1.5rem]" />
   );
 }
 
@@ -143,7 +150,7 @@ function SelectTokenB({ tokens, selected_token, on_select }) {
     );
   console.log("tokens", tokens.length);
   const resp = useReadContracts({ contracts: payload });
-  if (!resp.isFetched) return <>no tokens</>;
+  if (!resp.isSuccess) return;
   const balances = resp.data?.slice(0, tokens.length).map((res) => res.result);
   const allowances = resp.data
     ?.slice(tokens.length, tokens.length * 2)
@@ -328,68 +335,27 @@ function MakeDeposit() {
 }
 
 function App() {
+  const account = useAccount();
+
   const [supported_tokens, set_supported_tokens] = useState(null); // [address]
   const [user_tokens, set_user_tokens] = useState(null); // [{token: address, balance: uint}]
   const [selected_token, set_selected_token] = useState(null);
 
-  const account = useAccount();
+  const allowance = useReadContract({
+    address: selected_token?.address,
+    abi: erc20_abi,
+    functionName: "allowance",
+    args: [account.address, permit2],
+  });
+
+  // ui steps
+  const has_token = selected_token !== null;
+  const has_allowance = allowance.data >= maxUint96;
+  const has_permit = false;
+
   const [permit, setPermit] = useState([]);
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
-  const { data: block } = useBlockNumber();
-  const [token, setToken] = useState(
-    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-  );
-  const { data: results, isSuccess: multi_status } = useReadContracts({
-    contracts: [
-      {
-        abi: erc20_abi,
-        address: token,
-        functionName: "symbol",
-      },
-      {
-        abi: erc20_abi,
-        address: token,
-        functionName: "balanceOf",
-        args: [account.address],
-      },
-      {
-        abi: erc20_abi,
-        address: token,
-        functionName: "allowance",
-        args: [account.address, permit2],
-      },
-      // {
-      //   abi: registry_abi,
-      //   address: registry,
-      //   functionName: "latestVault",
-      //   args: [token],
-      // },
-    ],
-  });
-  const symbol = multi_status ? results[0].result : null;
-  const balance = multi_status ? results[1].result : null;
-  const allowance = multi_status ? results[2].result : null;
-  const vault = null; // multi_status ? results[3].result : null;
-
-  const { data: read_2, isSuccess: read_2_status } = useReadContracts({
-    contracts: [
-      {
-        abi: erc20_abi,
-        address: vault,
-        functionName: "symbol",
-      },
-      {
-        abi: erc20_abi,
-        address: vault,
-        functionName: "balanceOf",
-        args: [account.address],
-      },
-    ],
-  });
-
-  const vault_symbol = read_2_status ? read_2[0].result : null;
-  const vault_balance = read_2_status ? read_2[1].result : null;
 
   useEffect(() => {
     async function fetch_supported_tokens() {
@@ -488,14 +454,18 @@ function App() {
           <span>
             supports {supported_tokens.length} tokens
             {user_tokens !== null ? (
-              <span>, you have {user_tokens.length} tokens</span>
+              <span>, you have {user_tokens.length} tokens </span>
             ) : (
-              <span>, loading your tokens…</span>
+              <span className="text-violet-500">
+                , loading your tokens… <LoadingBunny />
+              </span>
             )}
           </span>
         </div>
       ) : (
-        <div className="text-xl">loading from registry…</div>
+        <div className="text-xl text-violet-500">
+          loading from registry… <LoadingBunny />
+        </div>
       )}
       {/* <div>
         {supported_tokens !== null ? (
@@ -518,29 +488,23 @@ function App() {
         />
       )}
 
-      <div>
-        {selected_token === null ? (
-          <div className="text-xl text-slate-400">select a token first</div>
-        ) : (
-          <>
-            <GrantApproval token={selected_token} />
-          </>
-        )}
-      </div>
+      {has_token && <GrantApproval token={selected_token} />}
 
-      {selected_token ? (
+      {has_allowance && (
         <SignPermit
           token={selected_token}
           spender={ypermit}
           setPermit={setPermit}
           permit={permit}
         />
-      ) : (
-        <div />
       )}
-      <MakeDeposit />
+      {has_permit && <MakeDeposit />}
 
       <Separator />
+
+      <div>
+        {allowance.status} {allowance.data?.toString()}
+      </div>
 
       {/* todo */}
       <div>
@@ -574,41 +538,6 @@ function App() {
         ))}
         <div>{status}</div>
         <div>{error?.message}</div>
-      </div>
-      <div>
-        <h2>permit2 allowance</h2>
-        <div>
-          wrap:{" "}
-          <TxButton
-            label="wrap"
-            payload={{
-              abi: erc20_abi,
-              address: token,
-              functionName: "deposit",
-              value: 10n ** 18n,
-            }}
-          ></TxButton>
-        </div>
-        <div>
-          balance: {multi_status && formatEther(balance)} {symbol}
-        </div>
-        <div>allowance: {multi_status && formatEther(allowance)}</div>
-        {allowance === 0n && (
-          <TxButton
-            label="approve"
-            payload={{
-              abi: erc20_abi,
-              address: token,
-              functionName: "approve",
-              args: [permit2, maxUint256],
-            }}
-          ></TxButton>
-        )}
-        <div>vault: {multi_status && vault}</div>
-        <div>
-          vault balance: {read_2_status && formatEther(vault_balance)}{" "}
-          {vault_symbol}
-        </div>
       </div>
 
       <div>
