@@ -82,7 +82,13 @@ export function SignPermit({ token, spender, permit, setPermit }) {
         >
           sign
         </Button>
-        <Code>{formatUnits(token.balance, token.decimals)} {token.symbol} to <a href={`https://etherscan.io/address/${ypermit}`} target="_blank">ypermit</a></Code>
+        <Code>
+          {token.symbol}.permit(
+          <a href={`https://etherscan.io/address/${ypermit}`} target="_blank">
+            ypermit
+          </a>
+          , {formatUnits(token.balance, token.decimals)})
+        </Code>
       </div>
     </Flex>
   );
