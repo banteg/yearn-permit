@@ -1,8 +1,9 @@
-import { Button } from "@radix-ui/themes";
+import { Button, Code, Flex } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { toast } from "sonner";
+import { formatUnits } from "viem";
 import { useSignTypedData } from "wagmi";
-import { permit2 } from "../constants/addresses";
+import { permit2, ypermit } from "../constants/addresses";
 import { MyCallout } from "./MyCallout";
 
 export function SignPermit({ token, spender, permit, setPermit }) {
@@ -27,7 +28,7 @@ export function SignPermit({ token, spender, permit, setPermit }) {
   const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));
 
   return (
-    <div className="space-y-4">
+    <Flex direction="column" gap="4">
       {permit.length ? (
         <MyCallout
           color="violet"
@@ -81,10 +82,8 @@ export function SignPermit({ token, spender, permit, setPermit }) {
         >
           sign
         </Button>
-        <div className="text-slate-500">
-          gasless permit to deposit into a vault
-        </div>
+        <Code>{formatUnits(token.balance, token.decimals)} {token.symbol} to <a href={`https://etherscan.io/address/${ypermit}`} target="_blank">ypermit</a></Code>
       </div>
-    </div>
+    </Flex>
   );
 }
