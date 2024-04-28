@@ -1,9 +1,10 @@
 import { erc20_abi, erc20_abi_overrides } from "@/constants/abi";
 import { permit2 } from "@/constants/addresses";
-import { Callout, Code, Flex, Strong, Text } from "@radix-ui/themes";
+import { Code, Flex, Skeleton, Strong } from "@radix-ui/themes";
 import { Snail } from "lucide-react";
 import { maxUint256 } from "viem";
 import { useAccount, useReadContract } from "wagmi";
+import { MyCallout } from "./MyCallout";
 import { TxButton } from "./TxButton";
 
 export function GrantApproval({ token }) {
@@ -14,24 +15,19 @@ export function GrantApproval({ token }) {
     functionName: "allowance",
     args: [account.address, permit2],
   });
-  if (token == null || !allowance.isSuccess) return;
-  if (allowance.data == 0n) {
-    return (
-      <Flex direction="column" gap="4">
-        <Callout.Root color="red" variant="soft">
-          <Callout.Icon>
-            <Snail size="1.3rem" />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text as="p">
-              <Strong>{token.symbol} needs approval</Strong>
-            </Text>
-            <Text as="p">
-              approve permit2 once to get gasless approvals across all supported
-              contracts
-            </Text>
-          </Callout.Text>
-        </Callout.Root>
+  const loading = token === null || !allowance.isSuccess;
+  if (allowance.isSuccess && allowance.data !== 0n) return;
+  return (
+    <Flex direction="column" gap="4">
+      <MyCallout
+        color="red"
+        icon={<Snail size="1.3rem" />}
+        title={<Strong>{token.symbol} needs approval</Strong>}
+        description="approve permit2 once to get gasless approvals across all supported
+          contracts"
+        loading={loading}
+      />
+      <Skeleton loading={loading}>
         <Flex gap="2" className="items-baseline">
           <TxButton
             label="approve"
@@ -50,7 +46,7 @@ export function GrantApproval({ token }) {
             , max_uint256)
           </Code>
         </Flex>
-      </Flex>
-    );
-  }
+      </Skeleton>
+    </Flex>
+  );
 }
