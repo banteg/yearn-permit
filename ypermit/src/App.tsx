@@ -58,10 +58,19 @@ const registries = [
   "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
   "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
 ];
+const latest_registry = registries[registries.length - 1];
 const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
 const erc20_abi_overrides = {
   "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
 };
+
+interface Token {
+  address: string;
+  balance: bigint; // used for checking which vaults to show
+  symbol: string;
+  decimals: bigint;
+  vault: string;
+}
 
 function Logo() {
   return (
@@ -168,13 +177,13 @@ function SelectTokenB({ tokens, selected_token, on_select }) {
   console.log(data);
 
   return (
-    <div className="grid gap-2 grid-cols-4 ">
+    <div className="grid gap-2 grid-cols-4">
       {data.map((token) => (
         <div
           className={cn(
             "p-2 rounded-lg flex-1",
             selected_token && token.address === selected_token.address
-              ? "bg-gray-100 border border-gray-300"
+              ? "border border-gray-300 bg-gray-200"
               : "border"
           )}
           key={token.address}
@@ -337,9 +346,11 @@ function MakeDeposit() {
 function App() {
   const account = useAccount();
 
-  const [supported_tokens, set_supported_tokens] = useState(null); // [address]
-  const [user_tokens, set_user_tokens] = useState(null); // [{token: address, balance: uint}]
-  const [selected_token, set_selected_token] = useState(null);
+  const [supported_tokens, set_supported_tokens] = useState<string[] | null>(
+    null
+  ); // [address]
+  const [user_tokens, set_user_tokens] = useState<Token[] | null>(null); // [{token: address, balance: uint}]
+  const [selected_token, set_selected_token] = useState<Token | null>(null);
 
   const allowance = useReadContract({
     address: selected_token?.address,
@@ -392,14 +403,16 @@ function App() {
     if (supported_tokens === null) return;
     set_user_tokens(null);
     async function fetch_user_tokens() {
+      if (supported_tokens === null) return;
       // check balances for all supported tokens
-      let payload = supported_tokens.map((token) => ({
-        address: token,
-        abi: erc20_abi,
-        functionName: "balanceOf",
-        args: [account.address],
-      }));
-      const balances = await multicall(config, { contracts: payload });
+      const balances = await multicall(config, {
+        contracts: supported_tokens.map((token) => ({
+          address: token,
+          abi: erc20_abi,
+          functionName: "balanceOf",
+          args: [account.address],
+        })),
+      });
       // filter by non-zero balances
       let token_balances = [];
       for (const [i, token] of supported_tokens.entries()) {
@@ -408,37 +421,39 @@ function App() {
         }
       }
       // fetch additional metadata like symbol and decimals
-      payload = token_balances
-        .map((token) => ({
-          address: token.address,
-          abi: erc20_abi,
-          functionName: "symbol",
-        }))
-        .concat(
-          token_balances.map((token) => ({
+      const metadata = await multicall(config, {
+        contracts: token_balances
+          .map((token) => ({
             address: token.address,
             abi: erc20_abi,
-            functionName: "decimals",
+            functionName: "symbol",
           }))
-        )
-        .concat(
-          token_balances.map((token) => ({
-            address: registries[1],
-            abi: registry_abi,
-            functionName: "latestVault",
-            args: [token.address],
-          }))
-        );
-      const metadata = await multicall(config, { contracts: payload });
+          .concat(
+            token_balances.map((token) => ({
+              address: token.address,
+              abi: erc20_abi,
+              functionName: "decimals",
+            }))
+          )
+          .concat(
+            token_balances.map((token) => ({
+              address: latest_registry,
+              abi: registry_abi,
+              functionName: "latestVault",
+              args: [token.address],
+            }))
+          ),
+      });
       const meta_balances = [];
       const skip = token_balances.length;
       for (const [i, token] of token_balances.entries()) {
-        meta_balances.push({
+        const token_meta: Token = {
           ...token,
           symbol: metadata[i].result,
           decimals: metadata[skip + i].result,
           vault: metadata[skip * 2 + i].result,
-        });
+        };
+        meta_balances.push(token_meta);
       }
       set_user_tokens(meta_balances);
       console.log("fetched", meta_balances.length, "user balances");
