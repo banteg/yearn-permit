@@ -1,6 +1,6 @@
 import { erc20_abi, erc20_abi_overrides } from "@/constants/abi";
 import { permit2 } from "@/constants/addresses";
-import { Code, Flex, Skeleton, Strong } from "@radix-ui/themes";
+import { Code, Flex, Link, Skeleton, Strong } from "@radix-ui/themes";
 import { Snail } from "lucide-react";
 import { maxUint256 } from "viem";
 import { useAccount, useReadContract } from "wagmi";
@@ -40,10 +40,10 @@ export function GrantApproval({ token }) {
           ></TxButton>
           <Code>
             {token.symbol}.approve(
-            <a href={`https://etherscan.io/address/${permit2}`} target="_blank">
+            <Link href={`https://etherscan.io/address/${permit2}`} target="_blank" color="violet">
               permit2
-            </a>
-            , max_uint256)
+            </Link>
+            , infinite)
           </Code>
         </Flex>
       </Skeleton>

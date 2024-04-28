@@ -1,4 +1,4 @@
-import { Button, Code, Flex } from "@radix-ui/themes";
+import { Button, Code, Flex, Link } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
@@ -84,9 +84,9 @@ export function SignPermit({ token, spender, permit, setPermit }) {
         </Button>
         <Code>
           {token.symbol}.permit(
-          <a href={`https://etherscan.io/address/${ypermit}`} target="_blank">
+          <Link href={`https://etherscan.io/address/${ypermit}`} target="_blank" color="violet">
             ypermit
-          </a>
+          </Link>
           , {formatUnits(token.balance, token.decimals)})
         </Code>
       </div>
