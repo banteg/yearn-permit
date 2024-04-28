@@ -1,41 +1,43 @@
+import {
+  Button,
+  Callout,
+  Code,
+  Container,
+  Flex,
+  Strong,
+  Text,
+} from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { multicall } from "@wagmi/core";
+import { Rabbit, Snail } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { Toaster, toast } from "sonner";
+import { maxUint256, maxUint96 } from "viem";
 import {
   useAccount,
   useConnect,
   useDisconnect,
   useReadContract,
   useSignTypedData,
-  useWaitForTransactionReceipt,
-  useWriteContract,
 } from "wagmi";
-import { erc20_abi, registry_abi, ypermit_abi, usdt_abi } from "./abi";
-import { formatEther, maxUint256, maxUint96 } from "viem";
-import { multicall } from "@wagmi/core";
-import { Rabbit, Snail, Ticket } from "lucide-react";
-import { config } from "./wagmi";
-import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
-import { Separator } from "./components/ui/separator";
-import { Toaster } from "./components/ui/sonner";
 import {
-  Flex,
-  Text,
-  Button,
-  Container,
-  Strong,
-  Callout,
-  Code,
-} from "@radix-ui/themes";
-import { resolve } from "path";
+  erc20_abi,
+  registry_abi,
+  usdt_abi,
+  weth_abi,
+  ypermit_abi,
+} from "./abi";
 import { SelectToken } from "./components/SelectToken";
+import { TxButton } from "./components/TxButton";
+import { Separator } from "./components/ui/separator";
+import { config } from "./wagmi";
 
 export const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const registries = [
   "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
   "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
 ];
+const weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 const latest_registry = registries[registries.length - 1];
 const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
 const erc20_abi_overrides = {
@@ -94,37 +96,6 @@ function SupportedTokens({ registry_tokens, user_tokens }) {
   );
 }
 
-function TxButton({ label, payload }) {
-  const query_client = useQueryClient();
-  const { data, isPending, writeContract } = useWriteContract({
-    mutation: {
-      onError(error, variables, context) {
-        toast(
-          <div>
-            <div className="font-bold">{error.name}</div>
-            <div className="text-xs">{error.message}</div>
-          </div>
-        );
-      },
-    },
-  });
-  const { isLoading, isSuccess } = useWaitForTransactionReceipt({ hash: data });
-  async function submit() {
-    writeContract(payload);
-  }
-  useEffect(() => {
-    if (!isSuccess) return;
-    query_client.invalidateQueries();
-  }, [isSuccess]);
-  return (
-    <>
-      <Button onClick={submit} disabled={isPending || isLoading}>
-        {label}
-      </Button>
-    </>
-  );
-}
-
 export function GrantApproval({ token }) {
   if (token === null) return;
   const account = useAccount();
@@ -163,7 +134,13 @@ export function GrantApproval({ token }) {
               args: [permit2, maxUint256],
             }}
           ></TxButton>
-          <Code>{token.symbol}.approve(<a href={`https://etherscan.io/address/${permit2}`} target="_blank">permit2</a>, max_uint256)</Code>
+          <Code>
+            {token.symbol}.approve(
+            <a href={`https://etherscan.io/address/${permit2}`} target="_blank">
+              permit2
+            </a>
+            , max_uint256)
+          </Code>
         </Flex>
       </Flex>
     );
@@ -195,18 +172,16 @@ function SignPermit({ token, spender, permit, setPermit }) {
     <div className="space-y-4">
       {permit.length ? (
         <Callout.Root color="violet" variant="soft">
-        <Callout.Icon>
-          <Rabbit size="1.3rem" />
-        </Callout.Icon>
-        <Callout.Text>
-          <Flex direction="column" gap="">
-            <Strong>have permit</Strong>
-            <Text truncate>
-            {permit[permit.length - 1].slice(0, 64)}
-            </Text>
-          </Flex>
-        </Callout.Text>
-      </Callout.Root>
+          <Callout.Icon>
+            <Rabbit size="1.3rem" />
+          </Callout.Icon>
+          <Callout.Text>
+            <Flex direction="column" gap="">
+              <Strong>have permit</Strong>
+              <Text truncate>{permit[permit.length - 1].slice(0, 64)}</Text>
+            </Flex>
+          </Callout.Text>
+        </Callout.Root>
       ) : (
         <Callout.Root color="violet" variant="soft">
           <Callout.Icon>
@@ -216,7 +191,7 @@ function SignPermit({ token, spender, permit, setPermit }) {
             <Flex direction="column" gap="">
               <Strong>sign permit</Strong>
               <Text>
-              sign to allow the deposit contract to pull your tokens
+                sign to allow the deposit contract to pull your tokens
               </Text>
             </Flex>
           </Callout.Text>
@@ -476,9 +451,18 @@ function App() {
             <>no permit</>
           )}
         </div>
+        <TxButton
+          label="wrap"
+          payload={{
+            abi: weth_abi,
+            address: weth,
+            functionName: "deposit",
+            value: 10n ** 18n,
+          }}
+        ></TxButton>
         <ReactQueryDevtools initialIsOpen={false} />
-        <Toaster />
       </Flex>
+      <Toaster richColors closeButton toastOptions={{ duration: 60000 }} />
     </Container>
   );
 }
