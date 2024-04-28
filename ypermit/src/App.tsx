@@ -34,6 +34,7 @@ import {
   Tooltip,
   Avatar,
   Callout,
+  Code,
 } from "@radix-ui/themes";
 import { resolve } from "path";
 
@@ -308,6 +309,7 @@ function TxButton({ label, payload }) {
 }
 
 export function GrantApproval({ token }) {
+  if (token === null) return;
   const account = useAccount();
   if (!account.isConnected) return;
   const allowance = useReadContract({
@@ -316,20 +318,25 @@ export function GrantApproval({ token }) {
     functionName: "allowance",
     args: [account.address, permit2],
   });
-  const writer = useWriteContract();
   if (!allowance.isSuccess) return;
   if (allowance.data == 0n) {
     return (
-      <div className="space-y-4">
-        <Alert variant="destructive">
-          <Snail className="h-4 w-4" />
-          <AlertTitle>{token.symbol} needs approval</AlertTitle>
-          <AlertDescription>
-            approve permit2 once to get gasless approvals across all supported
-            contracts
-          </AlertDescription>
-        </Alert>
-        <div className="flex space-x-2 items-baseline">
+      <Flex direction="column" gap="4">
+        <Callout.Root color="red" variant="soft">
+          <Callout.Icon>
+            <Snail size="1.3rem" />
+          </Callout.Icon>
+          <Callout.Text>
+            <Flex direction="column" gap="">
+              <Strong>{token.symbol} needs approval</Strong>
+              <Text>
+                approve permit2 once to get gasless approvals across all
+                supported contracts
+              </Text>
+            </Flex>
+          </Callout.Text>
+        </Callout.Root>
+        <Flex gap="2" className="items-baseline">
           <TxButton
             label="approve"
             payload={{
@@ -339,11 +346,9 @@ export function GrantApproval({ token }) {
               args: [permit2, maxUint256],
             }}
           ></TxButton>
-          <div className="text-slate-500">
-            approve permit2 to pull your {token.symbol}
-          </div>
-        </div>
-      </div>
+          <Code>{token.symbol}.approve(<a href={`https://etherscan.io/address/${permit2}`} target="_blank">permit2</a>, max_uint256)</Code>
+        </Flex>
+      </Flex>
     );
   }
 }
@@ -574,8 +579,7 @@ function App() {
           selected_token={selected_token}
           on_select={(token: Token) => set_selected_token(token)}
         />
-
-        {has_token && <GrantApproval token={selected_token} />}
+        <GrantApproval token={selected_token} />
 
         {has_allowance && (
           <SignPermit

@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <Theme>
+        <Theme accentColor="violet">
           <App />
         </Theme>
       </QueryClientProvider>
