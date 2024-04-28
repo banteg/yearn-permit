@@ -462,7 +462,7 @@ function App() {
         ></TxButton>
         <ReactQueryDevtools initialIsOpen={false} />
       </Flex>
-      <Toaster richColors closeButton toastOptions={{ duration: 60000 }} />
+      <Toaster richColors toastOptions={{ duration: 10000 }} />
     </Container>
   );
 }
