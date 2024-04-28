@@ -14,14 +14,28 @@ import {
 import { erc20_abi, registry_abi, ypermit_abi, usdt_abi } from "./abi";
 import { formatEther, maxUint256, formatUnits, maxUint96 } from "viem";
 import { multicall } from "@wagmi/core";
-import { Rabbit, Snail, Ticket } from "lucide-react";
+import { Rabbit, Snail, Sparkle, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { config } from "./wagmi";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { Separator } from "./components/ui/separator";
 import { Toaster } from "./components/ui/sonner";
-import { Flex, Text, Button } from "@radix-ui/themes";
+import {
+  Flex,
+  Text,
+  Button,
+  Container,
+  Grid,
+  Skeleton,
+  Box,
+  Card,
+  Strong,
+  Tooltip,
+  Avatar,
+  Callout,
+} from "@radix-ui/themes";
+import { resolve } from "path";
 
 const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const registries = [
@@ -35,11 +49,13 @@ const erc20_abi_overrides = {
 };
 
 interface Token {
-  address: string;
-  balance: bigint; // used for checking which vaults to show
-  symbol: string;
-  decimals: bigint;
-  vault: string;
+  address?: string;
+  balance?: bigint;
+  allowance?: bigint;
+  symbol?: string;
+  decimals?: bigint;
+  vault?: string;
+  logo?: string;
 }
 
 function Logo() {
@@ -69,19 +85,196 @@ function SupportedTokens({ registry_tokens, user_tokens }) {
     return (
       <div className="text-xl">
         <span>supports {registry_tokens.length} tokens, </span>
-        <span className="text-violet-500">loading your tokens…</span>
-        <LoadingBunny />
+        <span className="text-violet-500">
+          loading your tokens… <LoadingBunny />
+        </span>
       </div>
     );
   }
   // 3. fully loaded
   return (
     <div className="text-xl">
-      supports {registry_tokens.length}, you have {user_tokens.length}
+      supports {registry_tokens.length} tokens, you have {user_tokens.length}{" "}
+      tokens
     </div>
   );
 }
 
+function TokenCard({
+  token,
+  selected,
+  on_select,
+  loading,
+}: {
+  token: Token;
+  selected: boolean;
+  on_select: Function;
+  loading: boolean;
+}) {
+  return (
+    <Skeleton loading={loading}>
+      <Card
+        key={token.address}
+        onClick={(e) => on_select(token)}
+        className={cn("cursor-pointer", selected && "bg-slate-300")}
+      >
+        <Flex direction="column" gap="1">
+          <Flex gap="2">
+            <Avatar src={token.logo} size="1" radius="full"></Avatar>
+            <Text>{token.symbol}</Text>
+            <Box flexGrow="1"></Box>
+            {token.allowance! >= maxUint96 && (
+              <Tooltip content="gasless approval">
+                <Sparkle
+                  size="1.5rem"
+                  strokeWidth="1"
+                  className="text-green-500"
+                />
+              </Tooltip>
+            )}
+          </Flex>
+          <Text truncate className="text-xs">
+            {formatUnits(token.balance as bigint, token.decimals)}{" "}
+            {token.symbol}
+          </Text>
+        </Flex>
+      </Card>
+    </Skeleton>
+  );
+}
+
+function SelectToken({
+  tokens,
+  selected_token,
+  on_select,
+}: {
+  tokens: Token[];
+  selected_token: Token;
+  on_select: Function;
+}) {
+  const account = useAccount();
+  const is_loading_tokens = tokens === null;
+  const tokens_to_render = tokens
+    ? tokens
+    : [...Array(4).entries()].map((i, e) => ({
+        symbol: "YFI",
+        balance: 0n,
+        address: i,
+      }));
+
+  // 1. load balances and allowances
+  const resp = useReadContracts({
+    contracts:
+      tokens === null
+        ? []
+        : tokens
+            .map((token) => ({
+              address: token.address,
+              abi: erc20_abi,
+              functionName: "balanceOf",
+              args: [account.address],
+            }))
+            .concat(
+              tokens.map((token) => ({
+                address: token.address,
+                abi: erc20_abi,
+                functionName: "allowance",
+                args: [account.address, permit2],
+              }))
+            ),
+  });
+  if (tokens !== null && resp.isSuccess) {
+    for (const [i, token] of tokens.entries()) {
+      tokens_to_render[i] = {
+        ...tokens[i],
+        balance: resp.data[i].result,
+        allowance: resp.data[tokens.length + i].result,
+        logo: `https://assets.smold.app/api/token/1/${token.address}/logo.svg`,
+      };
+    }
+  }
+
+  return (
+    <Grid columns="4" gap="2">
+      {tokens_to_render.map((token) => (
+        <TokenCard
+          key={token.address}
+          token={token}
+          selected={selected_token && token.address == selected_token.address}
+          loading={is_loading_tokens || resp.isFetching}
+          on_select={on_select}
+        />
+      ))}
+    </Grid>
+  );
+  return;
+  // const account = useAccount();
+  // console.log("account", account, account.address);
+
+  // const payload = tokens
+  //   .map((token) => ({
+  //     address: token.address,
+  //     abi: erc20_abi,
+  //     functionName: "balanceOf",
+  //     args: [account.address],
+  //   }))
+  // .concat(
+  //   tokens.map((token) => ({
+  //     address: token.address,
+  //     abi: erc20_abi,
+  //     functionName: "allowance",
+  //     args: [account.address, permit2],
+  //   }))
+  //   );
+  // console.log("tokens", tokens.length);
+  // const resp = useReadContracts({ contracts: payload });
+  // if (!resp.isSuccess) return;
+  // const balances = resp.data?.slice(0, tokens.length).map((res) => res.result);
+  // const allowances = resp.data
+  //   ?.slice(tokens.length, tokens.length * 2)
+  //   .map((res) => res.result);
+  // console.log(balances);
+  // console.log(allowances);
+  // const data = [];
+  // for (const [i, token] of tokens.entries()) {
+  //   data.push({
+  //     ...token,
+  //     balance: resp.data[i].result,
+  //     allowance: resp.data[tokens.length + i].result,
+  //   });
+  // }
+  // console.log(data);
+
+  // return (
+  //   <div className="grid gap-2 grid-cols-4">
+  //     {data.map((token) => (
+  //       <div
+  //         className={cn(
+  //           "p-2 rounded-lg flex-1",
+  //           selected_token && token.address === selected_token.address
+  //             ? "border border-gray-300 bg-gray-200"
+  //             : "border"
+  //         )}
+  //         key={token.address}
+  //         onClick={(e) => on_select(token)}
+  //       >
+  //         <div className="flex space-x-2">
+  //           {/* some tokens like uni limit max allowance to 96 bits */}
+  //           {token.allowance >= maxUint96 ? (
+  //             <Rabbit className="text-green-500 w-5" />
+  //           ) : (
+  //             <Snail className="text-red-500 w-5" />
+  //           )}
+  //           <div>{token.symbol}</div>
+  //         </div>
+  //         <div className="text-xs text-gray-500 overflow-auto">
+  //           {formatUnits(token.balance, token.decimals)}
+  //         </div>
+  //       </div>
+  //     ))}
+  //   </div>
+  // );
+}
 
 function TxButton({ label, payload }) {
   const query_client = useQueryClient();
@@ -111,96 +304,6 @@ function TxButton({ label, payload }) {
         {label}
       </Button>
     </>
-  );
-}
-
-export function SelectToken({ tokens, on_select }) {
-  return (
-    <>
-      <Command className="rounded-lg border shadow-md">
-        <CommandInput placeholder="select token to deposit" />
-        <CommandList>
-          {tokens.map((token) => (
-            <CommandItem
-              key={token.address}
-              onSelect={(value) => on_select(token)}
-            >
-              <span>{token.symbol}</span>
-              <CommandShortcut>{token.balance_fmt}</CommandShortcut>
-            </CommandItem>
-          ))}
-        </CommandList>
-      </Command>
-    </>
-  );
-}
-
-function SelectTokenB({ tokens, selected_token, on_select }) {
-  const account = useAccount();
-  console.log("account", account, account.address);
-
-  const payload = tokens
-    .map((token) => ({
-      address: token.address,
-      abi: erc20_abi,
-      functionName: "balanceOf",
-      args: [account.address],
-    }))
-    .concat(
-      tokens.map((token) => ({
-        address: token.address,
-        abi: erc20_abi,
-        functionName: "allowance",
-        args: [account.address, permit2],
-      }))
-    );
-  console.log("tokens", tokens.length);
-  const resp = useReadContracts({ contracts: payload });
-  if (!resp.isSuccess) return;
-  const balances = resp.data?.slice(0, tokens.length).map((res) => res.result);
-  const allowances = resp.data
-    ?.slice(tokens.length, tokens.length * 2)
-    .map((res) => res.result);
-  console.log(balances);
-  console.log(allowances);
-  const data = [];
-  for (const [i, token] of tokens.entries()) {
-    data.push({
-      ...token,
-      balance: resp.data[i].result,
-      allowance: resp.data[tokens.length + i].result,
-    });
-  }
-  console.log(data);
-
-  return (
-    <div className="grid gap-2 grid-cols-4">
-      {data.map((token) => (
-        <div
-          className={cn(
-            "p-2 rounded-lg flex-1",
-            selected_token && token.address === selected_token.address
-              ? "border border-gray-300 bg-gray-200"
-              : "border"
-          )}
-          key={token.address}
-          onClick={(e) => on_select(token)}
-        >
-          <div className="flex space-x-2">
-            {/* some tokens like uni limit max allowance to 96 bits */}
-            {token.allowance >= maxUint96 ? (
-              <Rabbit className="text-green-500 w-5" />
-            ) : (
-              <Snail className="text-red-500 w-5" />
-            )}
-            <div>{token.symbol}</div>
-          </div>
-          <div className="text-xs text-gray-500 overflow-auto">
-            {formatUnits(token.balance, token.decimals)}
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -459,92 +562,91 @@ function App() {
   }, [supported_tokens, account.address]);
 
   return (
-    <Flex direction="column" gap="4" width="40rem" className="mx-auto py-4">
-      <Logo />
-      <SupportedTokens
-        registry_tokens={supported_tokens}
-        user_tokens={user_tokens}
-      />
-
-      {user_tokens !== null && (
-        <SelectTokenB
+    <Container width="40rem" py="4">
+      <Flex direction="column" gap="4" className="">
+        <Logo />
+        <SupportedTokens
+          registry_tokens={supported_tokens}
+          user_tokens={user_tokens}
+        />
+        <SelectToken
           tokens={user_tokens}
           selected_token={selected_token}
-          on_select={(token) => set_selected_token(token)}
+          on_select={(token: Token) => set_selected_token(token)}
         />
-      )}
 
-      {has_token && <GrantApproval token={selected_token} />}
+        {has_token && <GrantApproval token={selected_token} />}
 
-      {has_allowance && (
-        <SignPermit
-          token={selected_token}
-          spender={ypermit}
-          setPermit={setPermit}
-          permit={permit}
-        />
-      )}
-      {has_permit && <MakeDeposit />}
+        {has_allowance && (
+          <SignPermit
+            token={selected_token}
+            spender={ypermit}
+            setPermit={setPermit}
+            permit={permit}
+          />
+        )}
+        {has_permit && <MakeDeposit />}
 
-      <Separator />
-
-      <div>
-        {allowance.status} {allowance.data?.toString()}
-      </div>
-
-      {/* todo */}
-      <div>
-        <h2>Account</h2>
+        <Separator />
 
         <div>
-          status: {account.status}
-          <br />
-          addresses: {JSON.stringify(account.addresses)}
-          <br />
-          chainId: {account.chainId}
+          {allowance.status} {allowance.data?.toString()}
         </div>
 
-        {account.status === "connected" && (
-          <button type="button" onClick={() => disconnect()}>
-            Disconnect
-          </button>
-        )}
-      </div>
+        {/* todo */}
+        <div>
+          <h2>Account</h2>
 
-      <div>
-        <h2>Connect</h2>
-        {connectors.map((connector) => (
-          <button
-            key={connector.uid}
-            onClick={() => connect({ connector })}
-            type="button"
-          >
-            {connector.name}
-          </button>
-        ))}
-        <div>{status}</div>
-        <div>{error?.message}</div>
-      </div>
+          <div>
+            status: {account.status}
+            <br />
+            addresses: {JSON.stringify(account.addresses)}
+            <br />
+            chainId: {account.chainId}
+          </div>
 
-      <div>
-        <h2>send deposit</h2>
-        {permit.length ? (
-          <TxButton
-            label="deposit with permit"
-            payload={{
-              abi: ypermit_abi,
-              address: ypermit,
-              functionName: "deposit",
-              args: permit,
-            }}
-          ></TxButton>
-        ) : (
-          <>no permit</>
-        )}
-      </div>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <Toaster />
-    </Flex>
+          {account.status === "connected" && (
+            <button type="button" onClick={() => disconnect()}>
+              Disconnect
+            </button>
+          )}
+        </div>
+
+        <div>
+          <h2>Connect</h2>
+          {connectors.map((connector) => (
+            <button
+              key={connector.uid}
+              onClick={() => connect({ connector })}
+              type="button"
+            >
+              {connector.name}
+            </button>
+          ))}
+          <div>{status}</div>
+          <div>{error?.message}</div>
+        </div>
+
+        <div>
+          <h2>send deposit</h2>
+          {permit.length ? (
+            <TxButton
+              label="deposit with permit"
+              payload={{
+                abi: ypermit_abi,
+                address: ypermit,
+                functionName: "deposit",
+                args: permit,
+              }}
+            ></TxButton>
+          ) : (
+            <>no permit</>
+          )}
+        </div>
+        <ReactQueryDevtools initialIsOpen={false} />
+        <Toaster />
+      </Flex>
+    </Container>
   );
 }
 
