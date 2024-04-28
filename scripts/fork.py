@@ -137,11 +137,14 @@ def main():
 
     planner = Planner()
     planner.wrap_eth(str(uniswap.universal_router), wrap_amount)
+    planner.wrap_eth(str(dev), ONE)
 
     for token, fee in best_pools.items():
         planner.v3_swap_exact_in(str(dev), ONE, 0, [str(weth), fee, token], False)
 
-    uniswap.universal_router.execute(*planner.build(), value=wrap_amount, sender=dev)
+    uniswap.universal_router.execute(
+        *planner.build(), value=wrap_amount + ONE, sender=dev
+    )
 
     call = Call()
     for token in best_pools:
