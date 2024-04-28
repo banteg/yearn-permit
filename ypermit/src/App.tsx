@@ -6,16 +6,14 @@ import {
   useConnect,
   useDisconnect,
   useReadContract,
-  useReadContracts,
   useSignTypedData,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
 import { erc20_abi, registry_abi, ypermit_abi, usdt_abi } from "./abi";
-import { formatEther, maxUint256, formatUnits, maxUint96 } from "viem";
+import { formatEther, maxUint256, maxUint96 } from "viem";
 import { multicall } from "@wagmi/core";
-import { Rabbit, Snail, Sparkle, Ticket } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Rabbit, Snail, Ticket } from "lucide-react";
 import { config } from "./wagmi";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
@@ -26,19 +24,14 @@ import {
   Text,
   Button,
   Container,
-  Grid,
-  Skeleton,
-  Box,
-  Card,
   Strong,
-  Tooltip,
-  Avatar,
   Callout,
   Code,
 } from "@radix-ui/themes";
 import { resolve } from "path";
+import { SelectToken } from "./components/SelectToken";
 
-const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
+export const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const registries = [
   "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
   "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
@@ -49,7 +42,7 @@ const erc20_abi_overrides = {
   "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
 };
 
-interface Token {
+export interface Token {
   address?: string;
   balance?: bigint;
   allowance?: bigint;
@@ -99,182 +92,6 @@ function SupportedTokens({ registry_tokens, user_tokens }) {
       tokens
     </div>
   );
-}
-
-function TokenCard({
-  token,
-  selected,
-  on_select,
-  loading,
-}: {
-  token: Token;
-  selected: boolean;
-  on_select: Function;
-  loading: boolean;
-}) {
-  return (
-    <Skeleton loading={loading}>
-      <Card
-        key={token.address}
-        onClick={(e) => on_select(token)}
-        className={cn("cursor-pointer", selected && "bg-slate-300")}
-      >
-        <Flex direction="column" gap="1">
-          <Flex gap="2">
-            <Avatar src={token.logo} size="1" radius="full"></Avatar>
-            <Text>{token.symbol}</Text>
-            <Box flexGrow="1"></Box>
-            {token.allowance! >= maxUint96 && (
-              <Tooltip content="gasless approval">
-                <Sparkle
-                  size="1.5rem"
-                  strokeWidth="1"
-                  className="text-green-500"
-                />
-              </Tooltip>
-            )}
-          </Flex>
-          <Text truncate className="text-xs">
-            {formatUnits(token.balance as bigint, token.decimals)}{" "}
-            {token.symbol}
-          </Text>
-        </Flex>
-      </Card>
-    </Skeleton>
-  );
-}
-
-function SelectToken({
-  tokens,
-  selected_token,
-  on_select,
-}: {
-  tokens: Token[];
-  selected_token: Token;
-  on_select: Function;
-}) {
-  const account = useAccount();
-  const is_loading_tokens = tokens === null;
-  const tokens_to_render = tokens
-    ? tokens
-    : [...Array(4).entries()].map((i, e) => ({
-        symbol: "YFI",
-        balance: 0n,
-        address: i,
-      }));
-
-  // 1. load balances and allowances
-  const resp = useReadContracts({
-    contracts:
-      tokens === null
-        ? []
-        : tokens
-            .map((token) => ({
-              address: token.address,
-              abi: erc20_abi,
-              functionName: "balanceOf",
-              args: [account.address],
-            }))
-            .concat(
-              tokens.map((token) => ({
-                address: token.address,
-                abi: erc20_abi,
-                functionName: "allowance",
-                args: [account.address, permit2],
-              }))
-            ),
-  });
-  if (tokens !== null && resp.isSuccess) {
-    for (const [i, token] of tokens.entries()) {
-      tokens_to_render[i] = {
-        ...tokens[i],
-        balance: resp.data[i].result,
-        allowance: resp.data[tokens.length + i].result,
-        logo: `https://assets.smold.app/api/token/1/${token.address}/logo.svg`,
-      };
-    }
-  }
-
-  return (
-    <Grid columns="4" gap="2">
-      {tokens_to_render.map((token) => (
-        <TokenCard
-          key={token.address}
-          token={token}
-          selected={selected_token && token.address == selected_token.address}
-          loading={is_loading_tokens || resp.isFetching}
-          on_select={on_select}
-        />
-      ))}
-    </Grid>
-  );
-  return;
-  // const account = useAccount();
-  // console.log("account", account, account.address);
-
-  // const payload = tokens
-  //   .map((token) => ({
-  //     address: token.address,
-  //     abi: erc20_abi,
-  //     functionName: "balanceOf",
-  //     args: [account.address],
-  //   }))
-  // .concat(
-  //   tokens.map((token) => ({
-  //     address: token.address,
-  //     abi: erc20_abi,
-  //     functionName: "allowance",
-  //     args: [account.address, permit2],
-  //   }))
-  //   );
-  // console.log("tokens", tokens.length);
-  // const resp = useReadContracts({ contracts: payload });
-  // if (!resp.isSuccess) return;
-  // const balances = resp.data?.slice(0, tokens.length).map((res) => res.result);
-  // const allowances = resp.data
-  //   ?.slice(tokens.length, tokens.length * 2)
-  //   .map((res) => res.result);
-  // console.log(balances);
-  // console.log(allowances);
-  // const data = [];
-  // for (const [i, token] of tokens.entries()) {
-  //   data.push({
-  //     ...token,
-  //     balance: resp.data[i].result,
-  //     allowance: resp.data[tokens.length + i].result,
-  //   });
-  // }
-  // console.log(data);
-
-  // return (
-  //   <div className="grid gap-2 grid-cols-4">
-  //     {data.map((token) => (
-  //       <div
-  //         className={cn(
-  //           "p-2 rounded-lg flex-1",
-  //           selected_token && token.address === selected_token.address
-  //             ? "border border-gray-300 bg-gray-200"
-  //             : "border"
-  //         )}
-  //         key={token.address}
-  //         onClick={(e) => on_select(token)}
-  //       >
-  //         <div className="flex space-x-2">
-  //           {/* some tokens like uni limit max allowance to 96 bits */}
-  //           {token.allowance >= maxUint96 ? (
-  //             <Rabbit className="text-green-500 w-5" />
-  //           ) : (
-  //             <Snail className="text-red-500 w-5" />
-  //           )}
-  //           <div>{token.symbol}</div>
-  //         </div>
-  //         <div className="text-xs text-gray-500 overflow-auto">
-  //           {formatUnits(token.balance, token.decimals)}
-  //         </div>
-  //       </div>
-  //     ))}
-  //   </div>
-  // );
 }
 
 function TxButton({ label, payload }) {
@@ -377,21 +194,33 @@ function SignPermit({ token, spender, permit, setPermit }) {
   return (
     <div className="space-y-4">
       {permit.length ? (
-        <Alert>
-          <Ticket className="h-4 w-4" />
-          <AlertTitle>have permit</AlertTitle>
-          <AlertDescription className="overflow-clip">
-            {permit[permit.length - 1]}
-          </AlertDescription>
-        </Alert>
+        <Callout.Root color="violet" variant="soft">
+        <Callout.Icon>
+          <Rabbit size="1.3rem" />
+        </Callout.Icon>
+        <Callout.Text>
+          <Flex direction="column" gap="">
+            <Strong>have permit</Strong>
+            <Text truncate>
+            {permit[permit.length - 1].slice(0, 64)}
+            </Text>
+          </Flex>
+        </Callout.Text>
+      </Callout.Root>
       ) : (
-        <Alert>
-          <Rabbit className="h-4 w-4" />
-          <AlertTitle>sign permit</AlertTitle>
-          <AlertDescription>
-            sign to allow the deposit contract to pull your tokens
-          </AlertDescription>
-        </Alert>
+        <Callout.Root color="violet" variant="soft">
+          <Callout.Icon>
+            <Rabbit size="1.3rem" />
+          </Callout.Icon>
+          <Callout.Text>
+            <Flex direction="column" gap="">
+              <Strong>sign permit</Strong>
+              <Text>
+              sign to allow the deposit contract to pull your tokens
+              </Text>
+            </Flex>
+          </Callout.Text>
+        </Callout.Root>
       )}
       <div className="flex space-x-2 items-baseline">
         <Button
@@ -432,7 +261,7 @@ function SignPermit({ token, spender, permit, setPermit }) {
           sign
         </Button>
         <div className="text-slate-500">
-          gassless permit to deposit into a vault
+          gasless permit to deposit into a vault
         </div>
       </div>
     </div>
