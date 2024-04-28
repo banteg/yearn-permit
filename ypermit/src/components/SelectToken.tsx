@@ -1,19 +1,19 @@
-import { useAccount, useReadContracts } from "wagmi";
-import { erc20_abi } from "../abi";
-import { Grid } from "@radix-ui/themes";
-import { Token, permit2 } from "../App";
 import { cn } from "@/lib/utils";
 import {
-  Flex,
-  Text,
-  Skeleton,
+  Avatar,
   Box,
   Card,
+  Flex,
+  Grid,
+  Skeleton,
+  Text,
   Tooltip,
-  Avatar,
 } from "@radix-ui/themes";
 import { Sparkle } from "lucide-react";
 import { formatUnits, maxUint96 } from "viem";
+import { useAccount, useReadContracts } from "wagmi";
+import { Token, permit2 } from "../App";
+import { erc20_abi } from "../abi";
 
 export function SelectToken({
   tokens,
@@ -25,7 +25,6 @@ export function SelectToken({
   on_select: Function;
 }) {
   const account = useAccount();
-  const is_loading_tokens = tokens === null;
   const tokens_to_render = tokens
     ? tokens
     : [...Array(4).entries()].map((i, e) => ({
@@ -73,7 +72,7 @@ export function SelectToken({
           key={token.address}
           token={token}
           selected={selected_token && token.address == selected_token.address}
-          loading={is_loading_tokens || resp.isFetching}
+          loading={tokens === null || !resp.isSuccess}
           on_select={on_select}
         />
       ))}
