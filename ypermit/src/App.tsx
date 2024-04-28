@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useAccount,
-  useBlockNumber,
   useConnect,
   useDisconnect,
   useReadContract,
@@ -12,46 +11,17 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import {
-  permit2_abi,
-  erc20_abi,
-  registry_abi,
-  ypermit_abi,
-  usdt_abi,
-} from "./abi";
-import { formatEther, maxUint256, formatUnits, maxUint96, slice } from "viem";
-import { Button, ButtonLoading } from "@/components/ui/button";
-import { call, multicall, readContract } from "@wagmi/core";
-import {
-  Check,
-  ChevronsUpDown,
-  LoaderCircle,
-  Rabbit,
-  Rocket,
-  Snail,
-  Ticket,
-} from "lucide-react";
+import { erc20_abi, registry_abi, ypermit_abi, usdt_abi } from "./abi";
+import { formatEther, maxUint256, formatUnits, maxUint96 } from "viem";
+import { multicall } from "@wagmi/core";
+import { Rabbit, Snail, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { config } from "./wagmi";
 import { toast } from "sonner";
-import { Skeleton } from "./components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { Separator } from "./components/ui/separator";
 import { Toaster } from "./components/ui/sonner";
+import { Flex, Text, Button } from "@radix-ui/themes";
 
 const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 const registries = [
@@ -85,6 +55,33 @@ function LoadingBunny() {
     <Rabbit className="text-violet-500 inline animate-wiggle h-[1.5rem]" />
   );
 }
+
+function SupportedTokens({ registry_tokens, user_tokens }) {
+  // 1. loading from registry
+  if (registry_tokens === null)
+    return (
+      <div className="text-xl text-violet-500">
+        loading from registry… <LoadingBunny />
+      </div>
+    );
+  // 2. loading user balances
+  if (user_tokens === null) {
+    return (
+      <div className="text-xl">
+        <span>supports {registry_tokens.length} tokens, </span>
+        <span className="text-violet-500">loading your tokens…</span>
+        <LoadingBunny />
+      </div>
+    );
+  }
+  // 3. fully loaded
+  return (
+    <div className="text-xl">
+      supports {registry_tokens.length}, you have {user_tokens.length}
+    </div>
+  );
+}
+
 
 function TxButton({ label, payload }) {
   const query_client = useQueryClient();
@@ -462,38 +459,12 @@ function App() {
   }, [supported_tokens, account.address]);
 
   return (
-    <div className="p-8 space-y-4 flex flex-col w-[40rem] mx-auto">
+    <Flex direction="column" gap="4" width="40rem" className="mx-auto py-4">
       <Logo />
-      {supported_tokens ? (
-        <div className="text-xl">
-          <span>
-            supports {supported_tokens.length} tokens
-            {user_tokens !== null ? (
-              <span>, you have {user_tokens.length} tokens </span>
-            ) : (
-              <span className="text-violet-500">
-                , loading your tokens… <LoadingBunny />
-              </span>
-            )}
-          </span>
-        </div>
-      ) : (
-        <div className="text-xl text-violet-500">
-          loading from registry… <LoadingBunny />
-        </div>
-      )}
-      {/* <div>
-        {supported_tokens !== null ? (
-          <div className="text-xl">
-            supports {supported_tokens.length} tokens
-            {user_tokens !== null ? (
-              <>, you have {user_tokens.length} tokens</>
-            ) : (
-              <></>
-            )}
-          </div>
-        )} */}
-      {/* </div> */}
+      <SupportedTokens
+        registry_tokens={supported_tokens}
+        user_tokens={user_tokens}
+      />
 
       {user_tokens !== null && (
         <SelectTokenB
@@ -573,7 +544,7 @@ function App() {
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
       <Toaster />
-    </div>
+    </Flex>
   );
 }
 
