@@ -1,58 +1,39 @@
 import {
   Button,
-  Callout,
-  Code,
   Container,
   Flex,
-  Strong,
-  Text,
 } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { multicall } from "@wagmi/core";
-import { Rabbit, Snail } from "lucide-react";
+import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Toaster, toast } from "sonner";
-import { maxUint256, maxUint96 } from "viem";
+import { Toaster } from "sonner";
+import { maxUint96 } from "viem";
 import {
   useAccount,
   useConnect,
   useDisconnect,
   useReadContract,
-  useSignTypedData,
 } from "wagmi";
+import { GrantApproval } from "./components/GrantApproval";
+import { SelectToken } from "./components/SelectToken";
+import { SignPermit } from "./components/SignPermit";
+import { TxButton } from "./components/TxButton";
+import { Separator } from "./components/ui/separator";
 import {
   erc20_abi,
   registry_abi,
-  usdt_abi,
   weth_abi,
   ypermit_abi,
-} from "./abi";
-import { SelectToken } from "./components/SelectToken";
-import { TxButton } from "./components/TxButton";
-import { Separator } from "./components/ui/separator";
+} from "./constants/abi";
+import {
+  latest_registry,
+  permit2,
+  registries,
+  weth,
+  ypermit,
+} from "./constants/addresses";
 import { config } from "./wagmi";
-
-export const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
-const registries = [
-  "0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",
-  "0xaF1f5e1c19cB68B30aAD73846eFfDf78a5863319",
-];
-const weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-const latest_registry = registries[registries.length - 1];
-const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
-const erc20_abi_overrides = {
-  "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
-};
-
-export interface Token {
-  address?: string;
-  balance?: bigint;
-  allowance?: bigint;
-  symbol?: string;
-  decimals?: bigint;
-  vault?: string;
-  logo?: string;
-}
 
 function Logo() {
   return (
@@ -92,153 +73,6 @@ function SupportedTokens({ registry_tokens, user_tokens }) {
     <div className="text-xl">
       supports {registry_tokens.length} tokens, you have {user_tokens.length}{" "}
       tokens
-    </div>
-  );
-}
-
-export function GrantApproval({ token }) {
-  if (token === null) return;
-  const account = useAccount();
-  if (!account.isConnected) return;
-  const allowance = useReadContract({
-    address: token.address,
-    abi: erc20_abi,
-    functionName: "allowance",
-    args: [account.address, permit2],
-  });
-  if (!allowance.isSuccess) return;
-  if (allowance.data == 0n) {
-    return (
-      <Flex direction="column" gap="4">
-        <Callout.Root color="red" variant="soft">
-          <Callout.Icon>
-            <Snail size="1.3rem" />
-          </Callout.Icon>
-          <Callout.Text>
-            <Flex direction="column" gap="">
-              <Strong>{token.symbol} needs approval</Strong>
-              <Text>
-                approve permit2 once to get gasless approvals across all
-                supported contracts
-              </Text>
-            </Flex>
-          </Callout.Text>
-        </Callout.Root>
-        <Flex gap="2" className="items-baseline">
-          <TxButton
-            label="approve"
-            payload={{
-              abi: erc20_abi_overrides[token.address] ?? erc20_abi,
-              address: token.address,
-              functionName: "approve",
-              args: [permit2, maxUint256],
-            }}
-          ></TxButton>
-          <Code>
-            {token.symbol}.approve(
-            <a href={`https://etherscan.io/address/${permit2}`} target="_blank">
-              permit2
-            </a>
-            , max_uint256)
-          </Code>
-        </Flex>
-      </Flex>
-    );
-  }
-}
-
-function SignPermit({ token, spender, permit, setPermit }) {
-  const { signTypedData } = useSignTypedData({
-    mutation: {
-      onSuccess(signature, variables) {
-        console.log("mut", signature, variables);
-        const args = [
-          variables.message.permitted.token,
-          variables.message.permitted.amount,
-          variables.message.deadline,
-          signature,
-        ];
-        setPermit(args);
-      },
-      onError(error, variables, context) {
-        toast(error.message);
-      },
-    },
-  });
-
-  const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));
-
-  return (
-    <div className="space-y-4">
-      {permit.length ? (
-        <Callout.Root color="violet" variant="soft">
-          <Callout.Icon>
-            <Rabbit size="1.3rem" />
-          </Callout.Icon>
-          <Callout.Text>
-            <Flex direction="column" gap="">
-              <Strong>have permit</Strong>
-              <Text truncate>{permit[permit.length - 1].slice(0, 64)}</Text>
-            </Flex>
-          </Callout.Text>
-        </Callout.Root>
-      ) : (
-        <Callout.Root color="violet" variant="soft">
-          <Callout.Icon>
-            <Rabbit size="1.3rem" />
-          </Callout.Icon>
-          <Callout.Text>
-            <Flex direction="column" gap="">
-              <Strong>sign permit</Strong>
-              <Text>
-                sign to allow the deposit contract to pull your tokens
-              </Text>
-            </Flex>
-          </Callout.Text>
-        </Callout.Root>
-      )}
-      <div className="flex space-x-2 items-baseline">
-        <Button
-          onClick={() =>
-            signTypedData({
-              domain: {
-                name: "Permit2",
-                chainId: 1n,
-                verifyingContract: permit2,
-              },
-              types: {
-                PermitTransferFrom: [
-                  { name: "permitted", type: "TokenPermissions" },
-                  { name: "spender", type: "address" },
-                  { name: "nonce", type: "uint256" },
-                  { name: "deadline", type: "uint256" },
-                ],
-                TokenPermissions: [
-                  { name: "token", type: "address" },
-                  { name: "amount", type: "uint256" },
-                ],
-                EIP712Domain: [
-                  { name: "name", type: "string" },
-                  { name: "chainId", type: "uint256" },
-                  { name: "verifyingContract", type: "address" },
-                ],
-              },
-              primaryType: "PermitTransferFrom",
-              message: {
-                permitted: { token: token.address, amount: 10n ** 18n },
-                spender: spender,
-                nonce: deadline,
-                deadline: deadline,
-              },
-            })
-          }
-        >
-          sign
-        </Button>
-        <div className="text-slate-500">
-          gasless permit to deposit into a vault
-        </div>
-      </div>
     </div>
   );
 }
@@ -383,7 +217,7 @@ function App() {
           selected_token={selected_token}
           on_select={(token: Token) => set_selected_token(token)}
         />
-        <GrantApproval token={selected_token} />
+        {selected_token && <GrantApproval token={selected_token} />}
 
         {has_allowance && (
           <SignPermit

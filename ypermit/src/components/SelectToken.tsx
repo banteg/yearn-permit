@@ -12,8 +12,10 @@ import {
 import { Sparkle } from "lucide-react";
 import { formatUnits, maxUint96 } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
-import { Token, permit2 } from "../App";
-import { erc20_abi } from "../abi";
+// import { Token, permit2 } from "../App";
+import { erc20_abi } from "@/constants/abi";
+import { permit2 } from "@/constants/addresses";
+import { Token } from "@/types";
 
 export function SelectToken({
   tokens,

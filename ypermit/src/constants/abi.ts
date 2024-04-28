@@ -1587,3 +1587,7 @@ export const weth_abi = [
     type: "event",
   },
 ] as const;
+
+export const erc20_abi_overrides = {
+  "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
+};
