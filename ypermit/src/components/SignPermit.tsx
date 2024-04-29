@@ -1,9 +1,11 @@
+import { erc20_abi } from "@/constants/abi";
 import { Permit, useSignPermit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
 import { Button, Code, Flex, Text, TextField } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
+import { useAccount, useReadContract } from "wagmi";
 import { ypermit } from "../constants/addresses";
 import { ExplorerAddress } from "./ExplorerLink";
 import { MyCallout } from "./MyCallout";
@@ -26,10 +28,19 @@ export function SignPermit({
     () => parseUnits(amount, token.decimals),
     [amount, token]
   );
+  const account = useAccount();
+  // read balance because selected_token.balance is not reactive
+  const balance = useReadContract({
+    address: token.address,
+    abi: erc20_abi,
+    functionName: "balanceOf",
+    args: [account.address],
+  });
 
   useEffect(() => {
-    set_amount(formatUnits(token.balance, token.decimals));
-  }, [token]);
+    if (!balance.isSuccess) return;
+    set_amount(formatUnits(balance.data, token.decimals));
+  }, [balance.data]);
 
   useEffect(() => {
     if (permit === null) return;
@@ -52,8 +63,8 @@ export function SignPermit({
     const wei = parseUnits(value, token.decimals);
     if (wei < 0) {
       set_amount("0");
-    } else if (wei > token.balance) {
-      set_amount(formatUnits(token.balance, token.decimals));
+    } else if (wei > balance.data) {
+      set_amount(formatUnits(balance.data, token.decimals));
     } else {
       set_amount(value);
     }
@@ -89,7 +100,7 @@ export function SignPermit({
           <TextField.Slot side="right" px="1">
             <Button
               onClick={() =>
-                validate_set_amount(formatUnits(token.balance, token.decimals))
+                validate_set_amount(formatUnits(balance.data, token.decimals))
               }
             >
               max
