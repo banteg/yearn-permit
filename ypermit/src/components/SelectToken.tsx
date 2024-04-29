@@ -85,19 +85,28 @@ export function TokenCard({
   token,
   selected,
   on_select,
-  loading,
+  loading = false,
+  disabled = false,
+  wiggle = false,
 }: {
   token: Token;
   selected: boolean;
   on_select: Function;
   loading: boolean;
+  disabled: boolean;
+  wiggle: boolean;
 }) {
   return (
     <Skeleton loading={loading}>
       <Card
         key={token.address}
         onClick={(e) => on_select(token)}
-        className={cn("cursor-pointer", selected && "bg-slate-300")}
+        className={cn(
+          "cursor-pointer",
+          selected && "bg-slate-300",
+          disabled && "opacity-50",
+          wiggle && "animate-wiggle"
+        )}
       >
         <Flex direction="column" gap="1">
           <Flex gap="2">
