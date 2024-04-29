@@ -1,6 +1,7 @@
 from ape import chain, project, accounts
 from eth_abi import encode
 from hexbytes import HexBytes
+from rich import print
 
 
 def main():

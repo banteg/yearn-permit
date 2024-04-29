@@ -18,6 +18,12 @@ struct SignatureTransferDetails:
     to: address
     requestedAmount: uint256
 
+struct VaultInfo:
+    vault: address
+    token: address
+    vault_id: uint256
+    latest: bool
+
 interface Permit2:
     def permitTransferFrom(
         permit: PermitTransferFrom,
@@ -91,11 +97,11 @@ def fetch_user_tokens(user: address) -> DynArray[ERC20, 500]:
 
 @view
 @external
-def fetch_user_vaults(user: address) -> DynArray[ERC20, 500]:
+def fetch_user_vaults(user: address) -> DynArray[VaultInfo, 500]:
     """
     @notice Find all vaults a user has a balance in.
     """
-    vaults: DynArray[ERC20, 500] = empty(DynArray[ERC20, 500])
+    vaults: DynArray[VaultInfo, 500] = empty(DynArray[VaultInfo, 500])
     for registry in [registry_a, registry_b]:
         num_tokens: uint256 = registry.numTokens()
         for token_id in range(500):
@@ -108,6 +114,11 @@ def fetch_user_vaults(user: address) -> DynArray[ERC20, 500]:
                     break
                 vault: ERC20 = registry.vaults(token, vault_id)
                 if vault.balanceOf(user) > 0:
-                    vaults.append(vault)
+                    vaults.append(VaultInfo({
+                        vault: vault.address,
+                        token: token.address,
+                        vault_id: vault_id,
+                        latest: vault_id == num_vaults - 1,
+                    }))
     
     return vaults
