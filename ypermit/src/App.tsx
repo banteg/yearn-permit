@@ -1,3 +1,14 @@
+import { GrantApproval } from "@/components/GrantApproval";
+import { MakeDeposit } from "@/components/MakeDeposit";
+import { SelectToken } from "@/components/SelectToken";
+import { SignPermit } from "@/components/SignPermit";
+import { SupportedTokens } from "@/components/SupportedTokens";
+import { TxButton } from "@/components/TxButton";
+import { Separator } from "@/components/ui/separator";
+import { registry_abi, weth_abi, ypermit_abi } from "@/constants/abi";
+import { registries, weth, ypermit } from "@/constants/addresses";
+import { Permit } from "@/hooks/useSignPermit";
+import { Token } from "@/types";
 import { Box, Container, Flex } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -10,16 +21,6 @@ import {
   useReadContract,
   useReadContracts,
 } from "wagmi";
-import { GrantApproval } from "./components/GrantApproval";
-import { MakeDeposit } from "./components/MakeDeposit";
-import { SelectToken } from "./components/SelectToken";
-import { SignPermit } from "./components/SignPermit";
-import { TxButton } from "./components/TxButton";
-import { Separator } from "./components/ui/separator";
-import { registry_abi, weth_abi, ypermit_abi } from "./constants/abi";
-import { registries, weth, ypermit } from "./constants/addresses";
-import { Permit } from "./hooks/useSignPermit";
-import { Token } from "./types";
 
 function Logo() {
   return (
@@ -29,46 +30,6 @@ function Logo() {
   );
 }
 
-function LoadingBunny() {
-  return (
-    <Rabbit className="text-violet-500 inline animate-wiggle h-[1.5rem]" />
-  );
-}
-
-function SupportedTokens({
-  registry_tokens,
-  user_tokens,
-}: {
-  registry_tokens: bigint;
-  user_tokens: number;
-}) {
-  console.log("sup", registry_tokens, user_tokens);
-  // 1. loading from registry
-  if (registry_tokens === null)
-    return (
-      <div className="text-xl text-violet-500">
-        loading from registry… <LoadingBunny />
-      </div>
-    );
-  // 2. loading user balances
-  if (user_tokens === null) {
-    return (
-      <div className="text-xl">
-        <span>supports {registry_tokens.toString()} tokens, </span>
-        <span className="text-violet-500">
-          loading your tokens… <LoadingBunny />
-        </span>
-      </div>
-    );
-  }
-  // 3. fully loaded
-  return (
-    <div className="text-xl">
-      supports {registry_tokens.toString()} tokens, you have {user_tokens}{" "}
-      tokens
-    </div>
-  );
-}
 
 function App() {
   // account
