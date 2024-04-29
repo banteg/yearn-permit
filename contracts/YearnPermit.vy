@@ -18,10 +18,15 @@ struct SignatureTransferDetails:
     to: address
     requestedAmount: uint256
 
-struct VaultInfo:
-    vault: address
+struct TokenInfo:
     token: address
-    vault_id: uint256
+    vault: address
+    decimals: uint8
+    token_balance: uint256
+    vault_balance: uint256
+    permit2_allowance: uint256
+    symbol: String[100]
+    vault_api: String[100]
     latest: bool
 
 interface Permit2:
@@ -33,11 +38,18 @@ interface Permit2:
     ): nonpayable
 
 interface Registry:
-    def latestVault(token: address) -> address: nonpayable
+    def latestVault(token: address) -> address: view
     def numTokens() -> uint256: view
     def tokens(index: uint256) -> ERC20: view
     def numVaults(token: ERC20) -> uint256: view
     def vaults(token: ERC20, index: uint256) -> ERC20: view
+
+interface ERC20Detailed:
+    def symbol() -> String[100]: view
+    def decimals() -> uint8: view
+
+interface Vault:
+    def apiVersion() -> String[100]: view
 
 permit2: immutable(Permit2)
 registry_a: immutable(Registry)
@@ -78,46 +90,35 @@ def deposit(token: address, amount: uint256, deadline: uint256, signature: Bytes
 
 @view
 @external
-def fetch_user_tokens(user: address) -> DynArray[ERC20, 500]:
-    """
-    @notice Find all tokens a user can deposit into a vault.
-    """
-    tokens: DynArray[ERC20, 500] = empty(DynArray[ERC20, 500])
-    for registry in [registry_a, registry_b]:
-        num_tokens: uint256 = registry.numTokens()
-        for i in range(500):
-            if i == num_tokens:
-                break
-            token: ERC20 = registry.tokens(i)
-            if token.balanceOf(user) > 0:
-                tokens.append(token)
-        
-    return tokens
-
-
-@view
-@external
-def fetch_user_vaults(user: address) -> DynArray[VaultInfo, 500]:
+def fetch_user_info(user: address) -> DynArray[TokenInfo, 500]:
     """
     @notice Find all vaults a user has a balance in.
     """
-    vaults: DynArray[VaultInfo, 500] = empty(DynArray[VaultInfo, 500])
+    vaults: DynArray[TokenInfo, 500] = empty(DynArray[TokenInfo, 500])
     for registry in [registry_a, registry_b]:
         num_tokens: uint256 = registry.numTokens()
         for token_id in range(500):
             if token_id == num_tokens:
                 break
             token: ERC20 = registry.tokens(token_id)
+            token_balance: uint256 = token.balanceOf(user)
+            permit2_allowance: uint256 = token.allowance(user, permit2.address)
             num_vaults: uint256 = registry.numVaults(token)
             for vault_id in range(20):
                 if vault_id == num_vaults:
                     break
                 vault: ERC20 = registry.vaults(token, vault_id)
-                if vault.balanceOf(user) > 0:
-                    vaults.append(VaultInfo({
-                        vault: vault.address,
+                vault_balance: uint256 = vault.balanceOf(user)
+                if token_balance > 1 or vault_balance > 1:
+                    vaults.append(TokenInfo({
                         token: token.address,
-                        vault_id: vault_id,
+                        vault: vault.address,
+                        decimals: ERC20Detailed(token.address).decimals(),
+                        token_balance: token_balance,
+                        vault_balance: vault_balance,
+                        permit2_allowance: permit2_allowance,
+                        symbol: ERC20Detailed(token.address).symbol(),
+                        vault_api: Vault(vault.address).apiVersion(),
                         latest: vault_id == num_vaults - 1,
                     }))
     

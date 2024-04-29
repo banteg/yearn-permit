@@ -19,9 +19,9 @@ def main():
     code = HexBytes(HexBytes(code) + immutables).hex()
     call = chain.provider.web3.eth.call
     eco = chain.provider.network.ecosystem
-    user = accounts.load("yfi")
+    user = "0x93A62dA5a14C80f265DAbC077fCEE437B1a0Efde"
 
-    for method in ["fetch_user_tokens", "fetch_user_vaults"]:
+    for method in ["fetch_user_info"]:
         print(method)
         method = contract_type.methods[method]
         tx = eco.encode_transaction(ypermit, method, user).model_dump()
