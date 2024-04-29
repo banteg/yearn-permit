@@ -10,11 +10,9 @@ export function useDepositArgs(permit: Permit) {
     permit.signature,
   ];
   return {
-    payload: {
-      address: ypermit,
-      abi: ypermit_abi,
-      functionName: "deposit",
-      args: args,
-    },
+    address: ypermit,
+    abi: ypermit_abi,
+    functionName: "deposit",
+    args: args,
   };
 }

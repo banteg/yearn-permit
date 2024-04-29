@@ -1,4 +1,4 @@
-import { Box, Button, Container, Flex, Grid } from "@radix-ui/themes";
+import { Box, Container, Flex, Grid } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { multicall } from "@wagmi/core";
 import { Rabbit } from "lucide-react";
@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { Address, maxUint96 } from "viem";
 import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi";
 import { GrantApproval } from "./components/GrantApproval";
+import { MakeDeposit } from "./components/MakeDeposit";
 import { SelectToken, TokenCard } from "./components/SelectToken";
 import { SignPermit } from "./components/SignPermit";
 import { TxButton } from "./components/TxButton";
@@ -69,15 +70,6 @@ function SupportedTokens({ registry_tokens, user_tokens }) {
   );
 }
 
-function MakeDeposit() {
-  return (
-    <div className="flex space-x-2 items-baseline">
-      <Button>deposit</Button>
-      <div className="text-slate-500">into yearn vault</div>
-    </div>
-  );
-}
-
 function App() {
   const account = useAccount();
 
@@ -98,7 +90,7 @@ function App() {
   // ui steps
   const has_token = selected_token !== null;
   const has_allowance = allowance.data >= maxUint96;
-  const has_permit = false;
+  const has_permit = permit !== null;
 
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
@@ -211,7 +203,7 @@ function App() {
           on_select={(token: Token) => set_selected_token(token)}
           busy={is_busy}
         />
-        {selected_token && (
+        {has_token && (
           <GrantApproval token={selected_token} set_busy={set_busy} />
         )}
 
@@ -223,7 +215,14 @@ function App() {
             set_permit={set_permit}
           />
         )}
-        {has_permit && <MakeDeposit />}
+        {has_permit && (
+          <MakeDeposit
+            token={selected_token}
+            permit={permit}
+            set_permit={set_permit}
+            set_busy={set_busy}
+          />
+        )}
 
         <Box className="h-[20rem]"></Box>
         <Separator />
