@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { toast } from "sonner";
 import { Address } from "viem";
 import { useSignTypedData } from "wagmi";
@@ -9,8 +8,7 @@ export interface Permit {
   signature: string;
 }
 
-export function useSignPermit() {
-  const [permit, set_permit] = useState<Permit | null>(null);
+export function useSignPermit({ set_permit }: { set_permit: Function }) {
   const signer = useSignTypedData({
     mutation: {
       onSuccess(signature, variables) {
@@ -63,13 +61,7 @@ export function useSignPermit() {
     });
   }
 
-  function consume_permit() {
-    set_permit(null);
-  }
-
   return {
-    permit,
     sign_permit,
-    consume_permit,
   };
 }

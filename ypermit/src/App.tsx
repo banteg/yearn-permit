@@ -1,22 +1,11 @@
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Grid,
-} from "@radix-ui/themes";
+import { Box, Button, Container, Flex, Grid } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { multicall } from "@wagmi/core";
 import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
-import { maxUint96 } from "viem";
-import {
-  useAccount,
-  useConnect,
-  useDisconnect,
-  useReadContract,
-} from "wagmi";
+import { Address, maxUint96 } from "viem";
+import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi";
 import { GrantApproval } from "./components/GrantApproval";
 import { SelectToken, TokenCard } from "./components/SelectToken";
 import { SignPermit } from "./components/SignPermit";
@@ -35,6 +24,7 @@ import {
   weth,
   ypermit,
 } from "./constants/addresses";
+import { Permit } from "./hooks/useSignPermit";
 import { config } from "./wagmi";
 
 function Logo() {
@@ -91,11 +81,12 @@ function MakeDeposit() {
 function App() {
   const account = useAccount();
 
-  const [supported_tokens, set_supported_tokens] = useState<string[] | null>(
+  const [supported_tokens, set_supported_tokens] = useState<Address[] | null>(
     null
-  ); // [address]
+  );
   const [user_tokens, set_user_tokens] = useState<Token[] | null>(null); // [{token: address, balance: uint}]
   const [selected_token, set_selected_token] = useState<Token | null>(null);
+  const [permit, set_permit] = useState<Permit | null>(null);
 
   const allowance = useReadContract({
     address: selected_token?.address,
@@ -109,10 +100,9 @@ function App() {
   const has_allowance = allowance.data >= maxUint96;
   const has_permit = false;
 
-  const [permit, setPermit] = useState([]);
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
-  const [is_busy, set_busy] = useState(false)
+  const [is_busy, set_busy] = useState(false);
 
   useEffect(() => {
     async function fetch_supported_tokens() {
@@ -221,14 +211,16 @@ function App() {
           on_select={(token: Token) => set_selected_token(token)}
           busy={is_busy}
         />
-        {selected_token && <GrantApproval token={selected_token} set_busy={set_busy}/>}
+        {selected_token && (
+          <GrantApproval token={selected_token} set_busy={set_busy} />
+        )}
 
         {has_allowance && (
           <SignPermit
             token={selected_token}
             spender={ypermit}
-            setPermit={setPermit}
             permit={permit}
+            set_permit={set_permit}
           />
         )}
         {has_permit && <MakeDeposit />}
@@ -276,7 +268,7 @@ function App() {
 
         <div>
           <h2>send deposit</h2>
-          {permit.length ? (
+          {permit !== null ? (
             <TxButton
               label="deposit with permit"
               payload={{
@@ -304,24 +296,44 @@ function App() {
         <ReactQueryDevtools initialIsOpen={false} />
       </Flex>
       <Grid columns="4" gap="2">
-      <TokenCard
-          token={{symbol: 'YFI', address: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e', balance: 12345n * 10n ** 17n}}
+        <TokenCard
+          token={{
+            symbol: "YFI",
+            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+            balance: 12345n * 10n ** 17n,
+          }}
         />
-      <TokenCard
-          token={{symbol: 'YFI', address: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e', balance: 12345n * 10n ** 17n}}
+        <TokenCard
+          token={{
+            symbol: "YFI",
+            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+            balance: 12345n * 10n ** 17n,
+          }}
           selected={true}
         />
-      <TokenCard
-          token={{symbol: 'YFI', address: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e', balance: 12345n * 10n ** 17n}}
+        <TokenCard
+          token={{
+            symbol: "YFI",
+            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+            balance: 12345n * 10n ** 17n,
+          }}
           selected={true}
           wiggle={true}
         />
-      <TokenCard
-          token={{symbol: 'YFI', address: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e', balance: 12345n * 10n ** 17n}}
+        <TokenCard
+          token={{
+            symbol: "YFI",
+            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+            balance: 12345n * 10n ** 17n,
+          }}
           disabled={true}
         />
-      <TokenCard
-          token={{symbol: 'YFI', address: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e', balance: 12345n * 10n ** 17n}}
+        <TokenCard
+          token={{
+            symbol: "YFI",
+            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+            balance: 12345n * 10n ** 17n,
+          }}
           loading={true}
         />
       </Grid>
