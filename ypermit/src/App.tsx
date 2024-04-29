@@ -1,4 +1,4 @@
-import { Box, Container, Flex, Grid } from "@radix-ui/themes";
+import { Box, Container, Flex } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
@@ -12,7 +12,7 @@ import {
 } from "wagmi";
 import { GrantApproval } from "./components/GrantApproval";
 import { MakeDeposit } from "./components/MakeDeposit";
-import { SelectToken, TokenCard } from "./components/SelectToken";
+import { SelectToken } from "./components/SelectToken";
 import { SignPermit } from "./components/SignPermit";
 import { TxButton } from "./components/TxButton";
 import { Separator } from "./components/ui/separator";
@@ -42,7 +42,7 @@ function SupportedTokens({
   registry_tokens: bigint;
   user_tokens: number;
 }) {
-  console.log('sup', registry_tokens, user_tokens)
+  console.log("sup", registry_tokens, user_tokens);
   // 1. loading from registry
   if (registry_tokens === null)
     return (
@@ -233,48 +233,6 @@ function App() {
         ></TxButton>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </Flex>
-      <Grid columns="4" gap="2">
-        <TokenCard
-          token={{
-            symbol: "YFI",
-            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
-            balance: 12345n * 10n ** 17n,
-          }}
-        />
-        <TokenCard
-          token={{
-            symbol: "YFI",
-            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
-            balance: 12345n * 10n ** 17n,
-          }}
-          selected={true}
-        />
-        <TokenCard
-          token={{
-            symbol: "YFI",
-            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
-            balance: 12345n * 10n ** 17n,
-          }}
-          selected={true}
-          wiggle={true}
-        />
-        <TokenCard
-          token={{
-            symbol: "YFI",
-            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
-            balance: 12345n * 10n ** 17n,
-          }}
-          disabled={true}
-        />
-        <TokenCard
-          token={{
-            symbol: "YFI",
-            address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
-            balance: 12345n * 10n ** 17n,
-          }}
-          loading={true}
-        />
-      </Grid>
       <Toaster richColors toastOptions={{ duration: 10000 }} />
     </Container>
   );

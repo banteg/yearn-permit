@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Token } from "@/types";
 import {
   Avatar,
   Box,
@@ -11,11 +12,13 @@ import {
 } from "@radix-ui/themes";
 import { Sparkle } from "lucide-react";
 import { formatUnits, maxUint96 } from "viem";
-import { useAccount, useReadContracts } from "wagmi";
-// import { Token, permit2 } from "../App";
-import { erc20_abi } from "@/constants/abi";
-import { permit2 } from "@/constants/addresses";
-import { Token } from "@/types";
+
+const skeletoken = { symbol: "YFI", token_balance: 0n, decimals: 18 };
+
+export function TokenLogo({ address }) {
+  const src = `https://assets.smold.app/api/token/1/${address}/logo.svg`;
+  return <Avatar size="1" radius="full" src={address ? src : null}></Avatar>;
+}
 
 export function SelectToken({
   tokens,
@@ -28,63 +31,30 @@ export function SelectToken({
   on_select: Function;
   busy: boolean;
 }) {
-  const account = useAccount();
-  const tokens_to_render = tokens
-    ? tokens
-    : [...Array(4).entries()].map((i, e) => ({
-        symbol: "YFI",
-        balance: 0n,
-        address: i,
-      }));
-
-  // 1. load balances and allowances
-  const resp = useReadContracts({
-    contracts:
-      tokens === null
-        ? []
-        : tokens
-            .map((token) => ({
-              address: token.address,
-              abi: erc20_abi,
-              functionName: "balanceOf",
-              args: [account.address],
-            }))
-            .concat(
-              tokens.map((token) => ({
-                address: token.address,
-                abi: erc20_abi,
-                functionName: "allowance",
-                args: [account.address, permit2],
-              }))
-            ),
-  });
-  if (tokens !== null && resp.isSuccess) {
-    for (const [i, token] of tokens.entries()) {
-      tokens_to_render[i] = {
-        ...tokens[i],
-        balance: resp.data[i].result,
-        allowance: resp.data[tokens.length + i].result,
-        logo: `https://assets.smold.app/api/token/1/${token.address}/logo.svg`,
-      };
-    }
+  if (tokens === null) {
+    return (
+      <Grid columns="4" gap="2">
+        {[...Array(4)].map((i) => (
+          <TokenCard key={i} token={skeletoken} loading={true} />
+        ))}
+      </Grid>
+    );
   }
 
-  const selected_map = tokens_to_render.reduce((acc, token) => {
-    acc[token.address] =
-      selected_token && selected_token.address === token.address;
-    return acc;
-  }, {});
+  function is_selected(token: Token) {
+    return selected_token && token.token == selected_token.token;
+  }
 
   return (
     <Grid columns="4" gap="2">
-      {tokens_to_render.map((token) => (
+      {tokens.map((token) => (
         <TokenCard
-          key={token.address}
+          key={token.token}
           token={token}
-          selected={selected_map[token.address]}
-          loading={tokens === null || !resp.isSuccess}
-          wiggle={selected_map[token.address] && busy}
-          disabled={selected_map[token.address] === false && busy}
+          selected={is_selected(token)}
+          loading={tokens === null}
+          wiggle={busy && is_selected(token)}
+          disabled={busy && !is_selected(token)}
           on_select={on_select}
         />
       ))}
@@ -109,7 +79,7 @@ export function TokenCard({
   return (
     <Skeleton loading={loading}>
       <Card
-        key={token.address}
+        key={token.token}
         onClick={(e) => {
           if (disabled) return;
           on_select(token);
@@ -123,10 +93,10 @@ export function TokenCard({
       >
         <Flex direction="column" gap="1">
           <Flex gap="2">
-            <Avatar src={token.logo} size="1" radius="full"></Avatar>
+            <TokenLogo address={token.token} />
             <Text>{token.symbol}</Text>
             <Box flexGrow="1"></Box>
-            {token.allowance! >= maxUint96 && (
+            {token.permit2_allowance! >= maxUint96 && (
               <Tooltip content="gasless approval">
                 <Sparkle
                   size="1.5rem"
@@ -137,8 +107,7 @@ export function TokenCard({
             )}
           </Flex>
           <Text truncate className="text-xs">
-            {formatUnits(token.balance as bigint, token.decimals)}{" "}
-            {token.symbol}
+            {formatUnits(token.token_balance, token.decimals)} {token.symbol}
           </Text>
         </Flex>
       </Card>
