@@ -1,9 +1,14 @@
+import { Address } from "viem";
+
 export interface Token {
-  address?: string;
-  balance?: bigint;
-  allowance?: bigint;
-  symbol?: string;
-  decimals?: bigint;
-  vault?: string;
+  token: Address;
+  vault: Address;
+  decimals: bigint;
+  token_balance: bigint;
+  vault_balance: bigint;
+  permit2_allowance: bigint;
+  symbol: string;
+  vault_api: string;
+  latest: boolean;
   logo?: string;
 }

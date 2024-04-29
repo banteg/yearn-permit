@@ -1041,6 +1041,29 @@ export const ypermit_abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [{ name: "user", type: "address" }],
+    name: "fetch_user_info",
+    outputs: [
+      {
+        components: [
+          { name: "token", type: "address" },
+          { name: "vault", type: "address" },
+          { name: "decimals", type: "uint8" },
+          { name: "token_balance", type: "uint256" },
+          { name: "vault_balance", type: "uint256" },
+          { name: "permit2_allowance", type: "uint256" },
+          { name: "symbol", type: "string" },
+          { name: "vault_api", type: "string" },
+          { name: "latest", type: "bool" },
+        ],
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 export const usdt_abi = [
