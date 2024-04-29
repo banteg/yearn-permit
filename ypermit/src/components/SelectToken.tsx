@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Token } from "@/types";
+import { range } from "@/utils";
 import {
   Avatar,
   Box,
@@ -34,7 +35,7 @@ export function SelectToken({
   if (tokens === null) {
     return (
       <Grid columns="4" gap="2">
-        {[...Array(4)].map((i) => (
+        {range(4).map((i) => (
           <TokenCard key={i} token={skeletoken} loading={true} />
         ))}
       </Grid>
@@ -79,7 +80,6 @@ export function TokenCard({
   return (
     <Skeleton loading={loading}>
       <Card
-        key={token.token}
         onClick={(e) => {
           if (disabled) return;
           on_select(token);
