@@ -4,7 +4,12 @@ import { useSignTypedData } from "wagmi";
 import { permit2 } from "../constants/addresses";
 
 export interface Permit {
-  message: object;
+  message: {
+    permitted: { token: Address; amount: bigint };
+    spender: Address;
+    nonce: bigint;
+    deadline: bigint;
+  };
   signature: string;
 }
 

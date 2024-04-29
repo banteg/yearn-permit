@@ -90,14 +90,14 @@ function App() {
 
   // ui steps
   const is_connected = account.isConnected;
-  const is_approved = selected_token?.permit2_allowance ?? 0n >= maxUint96;
+  const is_approved = selected_token && selected_token.permit2_allowance >= maxUint96;
   const needs_approval = selected_token && !is_approved;
   const is_permitted = permit !== null;
 
   // invalidate permit by token address
   useEffect(() => {
     if (permit === null || selected_token == null) return;
-    if (permit.message.permitted.token !== selected_token.address) {
+    if (permit.message.permitted.token !== selected) {
       console.log("invalidate permit from app");
       set_permit(null);
     }

@@ -1,11 +1,10 @@
-import { erc20_abi } from "@/constants/abi";
 import { Permit, useSignPermit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
+import { from_wei, to_wei } from "@/utils";
 import { Button, Code, Flex, Text, TextField } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { formatUnits, parseUnits } from "viem";
-import { useAccount, useReadContract } from "wagmi";
+import { useEffect, useState } from "react";
+import { Address } from "viem";
 import { ypermit } from "../constants/addresses";
 import { ExplorerAddress } from "./ExplorerLink";
 import { MyCallout } from "./MyCallout";
@@ -26,28 +25,13 @@ export function SignPermit({
   const [amount, set_amount] = useState("0");
   const signer = useSignPermit({ set_permit });
   const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));
-  const amount_wei = useMemo(
-    () => parseUnits(amount, token.decimals),
-    [amount, token]
-  );
-  const account = useAccount();
-  // read balance because selected_token.balance is not reactive
-  const balance = useReadContract({
-    address: token.address,
-    abi: erc20_abi,
-    functionName: "balanceOf",
-    args: [account.address],
-  });
+  const amount_wei = to_wei(amount, token.decimals);
 
-  useEffect(() => {
-    if (!balance.isSuccess) return;
-    set_amount(formatUnits(balance.data, token.decimals));
-  }, [balance.data]);
-
+  // invalidate permit when token, spender, amount changes
   useEffect(() => {
     if (permit === null) return;
     if (
-      permit.message.permitted.token !== token.address ||
+      permit.message.permitted.token !== token.token ||
       permit.message.spender != spender ||
       permit.message.permitted.amount !== amount_wei
     ) {
@@ -57,20 +41,20 @@ export function SignPermit({
   }, [permit, token, spender, amount_wei]);
 
   useEffect(() => {
-    console.log("mounted");
-  }, []);
+    set_amount(from_wei(token.token_balance, token.decimals));
+  }, [token.token_balance]);
 
-  function validate_set_amount(value) {
+  function validate_set_amount(value: string) {
     try {
-      parseUnits(value, token.decimals);
+      to_wei(value, token.decimals);
     } catch (error) {
       return;
     }
-    const wei = parseUnits(value, token.decimals);
+    const wei = to_wei(value, token.decimals);
     if (wei < 0) {
       set_amount("0");
-    } else if (wei > balance.data) {
-      set_amount(formatUnits(balance.data, token.decimals));
+    } else if (wei > token.token_balance) {
+      set_amount(from_wei(token.token_balance, token.decimals));
     } else {
       set_amount(value);
     }
@@ -107,7 +91,9 @@ export function SignPermit({
           <TextField.Slot side="right" px="1">
             <Button
               onClick={() =>
-                validate_set_amount(formatUnits(balance.data, token.decimals))
+                validate_set_amount(
+                  from_wei(token.token_balance, token.decimals)
+                )
               }
               disabled={busy}
             >
@@ -120,10 +106,10 @@ export function SignPermit({
         <Button
           onClick={() =>
             signer.sign_permit(
-              token.address,
+              token.token,
               spender,
-              parseUnits(amount, token.decimals),
-              deadline,
+              to_wei(amount, token.decimals),
+              deadline, // use deadline as nonce
               deadline
             )
           }
@@ -132,12 +118,12 @@ export function SignPermit({
           permit
         </Button>
         <Code>
-          <ExplorerAddress address={token.address}>
+          <ExplorerAddress address={token.token}>
             {token.symbol}
           </ExplorerAddress>
           .permit(
           <ExplorerAddress address={ypermit}>ypermit</ExplorerAddress>,{" "}
-          {formatUnits(amount_wei, token.decimals)})
+          {from_wei(amount_wei, token.decimals)})
         </Code>
       </Flex>
     </Flex>
