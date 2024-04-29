@@ -1,4 +1,4 @@
-import { Button, Code, Flex, Link } from "@radix-ui/themes";
+import { Button, Code, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
@@ -44,7 +44,16 @@ export function SignPermit({ token, spender, permit, setPermit }) {
           description="sign to allow the deposit contract to pull your tokens"
         />
       )}
-      <div className="flex space-x-2 items-baseline">
+
+      <label>
+        <Text className="uppercase text-xs">deposit amount</Text>
+        <TextField.Root placeholder="deposit amount" size="3">
+          <TextField.Slot side="right" px="1">
+            <Button>max</Button>
+          </TextField.Slot>
+        </TextField.Root>
+      </label>
+      <Flex gap="2" className="items-baseline">
         <Button
           onClick={() =>
             signTypedData({
@@ -84,12 +93,16 @@ export function SignPermit({ token, spender, permit, setPermit }) {
         </Button>
         <Code>
           {token.symbol}.permit(
-          <Link href={`https://etherscan.io/address/${ypermit}`} target="_blank" color="violet">
+          <Link
+            href={`https://etherscan.io/address/${ypermit}`}
+            target="_blank"
+            color="violet"
+          >
             ypermit
           </Link>
           , {formatUnits(token.balance, token.decimals)})
         </Code>
-      </div>
+      </Flex>
     </Flex>
   );
 }
