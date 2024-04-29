@@ -4,7 +4,7 @@ import { useDepositArgs } from "@/hooks/useDepositArgs";
 import { Code, Flex, Link } from "@radix-ui/themes";
 import { formatUnits } from "viem";
 
-export function MakeDeposit({ token, permit, set_busy }) {
+export function MakeDeposit({ token, permit, set_permit, set_busy }) {
   const args = useDepositArgs(permit);
   return (
     <Flex gap="2" className="items-baseline">
@@ -13,6 +13,7 @@ export function MakeDeposit({ token, permit, set_busy }) {
         description={`${token.symbol} deposit`}
         payload={args}
         set_busy={set_busy}
+        cleanup={() => {set_permit(null)}}
       />
       <Code truncate>
         <Link

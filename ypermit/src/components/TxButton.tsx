@@ -9,11 +9,13 @@ export function TxButton({
   description = null,
   payload,
   set_busy,
+  cleanup = null,
 }: {
   label: string;
   description: string;
   payload: object;
   set_busy: Function;
+  cleanup: Function | null;
 }) {
   const query_client = useQueryClient();
   const [resolver, set_resolver] = useState(null);
@@ -61,8 +63,9 @@ export function TxButton({
   }
 
   useEffect(() => {
-    set_busy(false)
+    set_busy(false);
     if (!isSuccess) return;
+    if (cleanup !== null) cleanup();
     query_client.invalidateQueries();
     // sets the promise toast to success
     resolver();
