@@ -21,10 +21,12 @@ export function SelectToken({
   tokens,
   selected_token,
   on_select,
+  busy = false,
 }: {
   tokens: Token[];
   selected_token: Token;
   on_select: Function;
+  busy: boolean;
 }) {
   const account = useAccount();
   const tokens_to_render = tokens
@@ -67,14 +69,22 @@ export function SelectToken({
     }
   }
 
+  const selected_map = tokens_to_render.reduce((acc, token) => {
+    acc[token.address] =
+      selected_token && selected_token.address === token.address;
+    return acc;
+  }, {});
+
   return (
     <Grid columns="4" gap="2">
       {tokens_to_render.map((token) => (
         <TokenCard
           key={token.address}
           token={token}
-          selected={selected_token && token.address == selected_token.address}
+          selected={selected_map[token.address]}
           loading={tokens === null || !resp.isSuccess}
+          wiggle={selected_map[token.address] && busy}
+          disabled={selected_map[token.address] === false && busy}
           on_select={on_select}
         />
       ))}
@@ -104,7 +114,7 @@ export function TokenCard({
         className={cn(
           "cursor-pointer",
           selected && "bg-slate-300",
-          disabled && "opacity-50",
+          disabled && "opacity-50 cursor-not-allowed",
           wiggle && "animate-wiggle"
         )}
       >
