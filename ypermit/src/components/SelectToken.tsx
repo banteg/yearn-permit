@@ -92,6 +92,16 @@ export function TokenCard({
   disabled: boolean;
   wiggle: boolean;
 }) {
+  const token_balance = from_wei(token.token_balance, token.decimals);
+  const vault_balance = from_wei(
+    token.vault_balance * token.vault_share_price,
+    token.decimals * 2
+  );
+  const share_in_vault =
+    Number(vault_balance) > 0
+      ? Number(vault_balance) / (Number(token_balance) + Number(vault_balance))
+      : 0;
+  console.log(share_in_vault);
   return (
     <Skeleton loading={loading}>
       <Card
@@ -106,10 +116,14 @@ export function TokenCard({
           wiggle && "animate-wiggle"
         )}
       >
+        <div
+          className="bg-violet-500 bottom-0 left-0 absolute h-[3px] z-10"
+          style={{ width: `${share_in_vault * 100}%` }}
+        ></div>
         <Flex direction="column" gap="1">
           <Flex gap="2">
             <TokenLogo address={token.token} />
-            <Text>{token.symbol}</Text>
+            <Text truncate>{token.symbol}</Text>
             <Box flexGrow="1"></Box>
             {token.permit2_allowance! >= maxUint96 && (
               <Tooltip content="gasless approval">
