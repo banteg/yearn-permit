@@ -1,5 +1,6 @@
 import { GrantApproval } from "@/components/GrantApproval";
 import { MakeDeposit } from "@/components/MakeDeposit";
+import { MyCallout } from "@/components/MyCallout";
 import { SelectToken } from "@/components/SelectToken";
 import { SignPermit } from "@/components/SignPermit";
 import { SupportedTokens } from "@/components/SupportedTokens";
@@ -10,7 +11,7 @@ import { registries, weth, ypermit } from "@/constants/addresses";
 import { Permit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
 import { Box, Container, Flex } from "@radix-ui/themes";
-import { Rabbit } from "lucide-react";
+import { HeartCrack, Rabbit } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { Address, maxUint96 } from "viem";
@@ -47,6 +48,7 @@ function App() {
     abi: ypermit_abi,
     functionName: "fetch_user_info",
     args: [account.address!],
+    query: { retry: 0 },
   });
 
   // read number of supported tokens
@@ -58,7 +60,10 @@ function App() {
     })),
   });
   const num_tokens = registry_num_tokens.isSuccess
-    ? registry_num_tokens.data.reduce((acc, val) => acc + val.result, 0n)
+    ? registry_num_tokens.data.reduce(
+        (acc, val) => acc + (val.result as bigint),
+        0n
+      )
     : null;
 
   // computed lists of tokens and vaults of user
@@ -90,7 +95,8 @@ function App() {
 
   // ui steps
   const is_connected = account.isConnected;
-  const is_approved = selected_token && selected_token.permit2_allowance >= maxUint96;
+  const is_approved =
+    selected_token && selected_token.permit2_allowance >= maxUint96;
   const needs_approval = selected_token && !is_approved;
   const is_permitted = permit !== null;
 
@@ -102,6 +108,19 @@ function App() {
       set_permit(null);
     }
   }, [permit, selected_token]);
+
+  if (user_info.isError) {
+    return (
+      <Container width="40rem" py="4">
+        <MyCallout
+          color="red"
+          icon={<HeartCrack />}
+          title={user_info.error.name}
+          description={user_info.error.message}
+        ></MyCallout>
+      </Container>
+    );
+  }
 
   return (
     <Container width="40rem" py="4">

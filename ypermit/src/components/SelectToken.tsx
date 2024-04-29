@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Token } from "@/types";
-import { range } from "@/utils";
+import { from_wei, range } from "@/utils";
 import {
   Avatar,
   Box,
@@ -12,13 +12,25 @@ import {
   Tooltip,
 } from "@radix-ui/themes";
 import { Sparkle } from "lucide-react";
-import { formatUnits, maxUint96 } from "viem";
+import { Address, maxUint96 } from "viem";
 
-const skeletoken = { symbol: "YFI", token_balance: 0n, decimals: 18 };
+const skeletoken = {
+  symbol: "YFI",
+  token_balance: 0n,
+  vault_balance: 0n,
+  decimals: 18,
+};
 
-export function TokenLogo({ address }) {
+export function TokenLogo({ address }: { address: Address }) {
   const src = `https://assets.smold.app/api/token/1/${address}/logo.svg`;
-  return <Avatar size="1" radius="full" src={address ? src : null}></Avatar>;
+  return (
+    <Avatar
+      size="1"
+      radius="full"
+      src={address ? src : undefined}
+      fallback="T"
+    ></Avatar>
+  );
 }
 
 export function SelectToken({
@@ -36,6 +48,7 @@ export function SelectToken({
     return (
       <Grid columns="4" gap="2">
         {range(4).map((i) => (
+          // @ts-ignore
           <TokenCard key={i} token={skeletoken} loading={true} />
         ))}
       </Grid>
@@ -43,7 +56,7 @@ export function SelectToken({
   }
 
   function is_selected(token: Token) {
-    return selected_token && token.token == selected_token.token;
+    return !!selected_token && token.token === selected_token.token;
   }
 
   return (
@@ -107,7 +120,10 @@ export function TokenCard({
             )}
           </Flex>
           <Text truncate className="text-xs">
-            {formatUnits(token.token_balance, token.decimals)} {token.symbol}
+            W {from_wei(token.token_balance, token.decimals)} {token.symbol}
+          </Text>
+          <Text truncate className="text-xs">
+            Y {from_wei(token.vault_balance, token.decimals)} {token.symbol}
           </Text>
         </Flex>
       </Card>

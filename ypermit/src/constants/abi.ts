@@ -1057,6 +1057,7 @@ export const ypermit_abi = [
           { name: "permit2_allowance", type: "uint256" },
           { name: "symbol", type: "string" },
           { name: "vault_api", type: "string" },
+          { name: "vault_share_price", type: "uint256" },
           { name: "latest", type: "bool" },
         ],
         name: "",

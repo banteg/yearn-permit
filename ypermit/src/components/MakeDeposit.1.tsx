@@ -1,24 +1,14 @@
 import { TxButton } from "@/components/TxButton";
 import { ypermit } from "@/constants/addresses";
 import { useDepositArgs } from "@/hooks/useDepositArgs";
-import { Permit } from "@/hooks/useSignPermit";
-import { Token } from "@/types";
 import { from_wei } from "@/utils";
-import { Code, Flex } from "@radix-ui/themes";
+import { Code, Flex, Link } from "@radix-ui/themes";
 import { ExplorerAddress } from "./ExplorerLink";
+import { MakeDepositProps } from "./MakeDeposit";
 
-interface MakeDepositProps {
-  token: Token;
-  permit: Permit;
-  set_permit: Function;
-  set_busy: Function;
-}
 
 export function MakeDeposit({
-  token,
-  permit,
-  set_permit,
-  set_busy,
+  token, permit, set_permit, set_busy,
 }: MakeDepositProps) {
   const args = useDepositArgs(permit);
   return (
@@ -30,13 +20,25 @@ export function MakeDeposit({
         set_busy={set_busy}
         cleanup={() => {
           set_permit(null);
-        }}
-      />
+        }} />
       <Code truncate>
-        <ExplorerAddress address={ypermit}>ypermit</ExplorerAddress>
+        <ExplorerAddress>ypermit</ExplorerAddress>
+        <Link
+          href={`https://etherscan.io/address/${ypermit}`}
+          target="_blank"
+          color="violet"
+        >
+          ypermit
+        </Link>
         .deposit(
-        <ExplorerAddress address={token.token}>{token.symbol}</ExplorerAddress>,{" "}
-        {from_wei(permit.message.permitted.amount, token.decimals)},{" "}
+        <Link
+          href={`https://etherscan.io/address/${token.token}`}
+          target="_blank"
+          color="violet"
+        >
+          {token.symbol}
+        </Link>
+        , {from_wei(permit.message.permitted.amount, token.decimals)},{" "}
         {permit.message.deadline.toString()}, {permit.signature})
       </Code>
     </Flex>
