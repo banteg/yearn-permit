@@ -15,11 +15,13 @@ export function SignPermit({
   spender,
   permit,
   set_permit,
+  busy = false,
 }: {
   token: Token;
   spender: Address;
   permit: Permit | null;
   set_permit: Function;
+  busy: boolean;
 }) {
   const [amount, set_amount] = useState("0");
   const signer = useSignPermit({ set_permit });
@@ -53,6 +55,10 @@ export function SignPermit({
       set_permit(null);
     }
   }, [permit, token, spender, amount_wei]);
+
+  useEffect(() => {
+    console.log("mounted");
+  }, []);
 
   function validate_set_amount(value) {
     try {
@@ -96,12 +102,14 @@ export function SignPermit({
           className="w-60"
           value={amount}
           onChange={(e) => validate_set_amount(e.target.value)}
+          disabled={busy}
         >
           <TextField.Slot side="right" px="1">
             <Button
               onClick={() =>
                 validate_set_amount(formatUnits(balance.data, token.decimals))
               }
+              disabled={busy}
             >
               max
             </Button>
@@ -119,8 +127,9 @@ export function SignPermit({
               deadline
             )
           }
+          disabled={busy}
         >
-          sign
+          permit
         </Button>
         <Code>
           <ExplorerAddress address={token.address}>

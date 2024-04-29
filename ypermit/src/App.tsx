@@ -189,6 +189,17 @@ function App() {
     fetch_user_tokens();
   }, [supported_tokens, account.address]);
 
+  useEffect(() => {
+    if (permit === null) return;
+    if (
+      permit.message.permitted.token !== selected_token.address
+    ) {
+      console.log("invalidate permit from app");
+      set_permit(null);
+    }
+  }, [permit, selected_token]);
+
+
   return (
     <Container width="40rem" py="4">
       <Flex direction="column" gap="4" className="">
@@ -213,6 +224,7 @@ function App() {
             spender={ypermit}
             permit={permit}
             set_permit={set_permit}
+            busy={is_busy}
           />
         )}
         {has_permit && (
