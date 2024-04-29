@@ -1,10 +1,11 @@
 import { erc20_abi, erc20_abi_overrides } from "@/constants/abi";
 import { permit2 } from "@/constants/addresses";
 import { Token } from "@/types";
-import { Code, Flex, Link, Skeleton, Strong } from "@radix-ui/themes";
+import { Code, Flex, Skeleton, Strong } from "@radix-ui/themes";
 import { Snail } from "lucide-react";
 import { maxUint256 } from "viem";
 import { useAccount, useReadContract } from "wagmi";
+import { ExplorerAddress } from "./ExplorerLink";
 import { MyCallout } from "./MyCallout";
 import { TxButton } from "./TxButton";
 
@@ -48,15 +49,12 @@ export function GrantApproval({
             set_busy={set_busy}
           ></TxButton>
           <Code>
-            {token.symbol}.approve(
-            <Link
-              href={`https://etherscan.io/address/${permit2}`}
-              target="_blank"
-              color="violet"
-            >
-              permit2
-            </Link>
-            , infinite)
+            <ExplorerAddress address={token.address}>
+              {token.symbol}
+            </ExplorerAddress>
+            .approve(
+            <ExplorerAddress address={permit2}>permit2</ExplorerAddress>,{" "}
+            infinite)
           </Code>
         </Flex>
       </Skeleton>

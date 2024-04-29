@@ -1,10 +1,11 @@
 import { Permit, useSignPermit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
-import { Button, Code, Flex, Link, Text, TextField } from "@radix-ui/themes";
+import { Button, Code, Flex, Text, TextField } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import { ypermit } from "../constants/addresses";
+import { ExplorerAddress } from "./ExplorerLink";
 import { MyCallout } from "./MyCallout";
 
 export function SignPermit({
@@ -111,15 +112,12 @@ export function SignPermit({
           sign
         </Button>
         <Code>
-          {token.symbol}.permit(
-          <Link
-            href={`https://etherscan.io/address/${ypermit}`}
-            target="_blank"
-            color="violet"
-          >
-            ypermit
-          </Link>
-          , {formatUnits(amount_wei, token.decimals)})
+          <ExplorerAddress address={token.address}>
+            {token.symbol}
+          </ExplorerAddress>
+          .permit(
+          <ExplorerAddress address={ypermit}>ypermit</ExplorerAddress>,{" "}
+          {formatUnits(amount_wei, token.decimals)})
         </Code>
       </Flex>
     </Flex>
