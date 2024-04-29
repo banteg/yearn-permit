@@ -28,7 +28,7 @@ export function SignPermit({
 
   useEffect(() => {
     set_amount(formatUnits(token.balance, token.decimals));
-  }, [token.balance]);
+  }, [token]);
 
   useEffect(() => {
     if (permit === null) return;
@@ -41,6 +41,22 @@ export function SignPermit({
       set_permit(null);
     }
   }, [permit, token, spender, amount_wei]);
+
+  function validate_set_amount(value) {
+    try {
+      parseUnits(value, token.decimals);
+    } catch (error) {
+      return;
+    }
+    const wei = parseUnits(value, token.decimals);
+    if (wei < 0) {
+      set_amount("0");
+    } else if (wei > token.balance) {
+      set_amount(formatUnits(token.balance, token.decimals));
+    } else {
+      set_amount(value);
+    }
+  }
 
   return (
     <Flex direction="column" gap="4">
@@ -67,9 +83,16 @@ export function SignPermit({
           size="3"
           className="w-60"
           value={amount}
+          onChange={(e) => validate_set_amount(e.target.value)}
         >
           <TextField.Slot side="right" px="1">
-            <Button>max</Button>
+            <Button
+              onClick={() =>
+                validate_set_amount(formatUnits(token.balance, token.decimals))
+              }
+            >
+              max
+            </Button>
           </TextField.Slot>
         </TextField.Root>
       </div>
@@ -96,7 +119,7 @@ export function SignPermit({
           >
             ypermit
           </Link>
-          , {formatUnits(token.balance, token.decimals)})
+          , {formatUnits(amount_wei, token.decimals)})
         </Code>
       </Flex>
     </Flex>
