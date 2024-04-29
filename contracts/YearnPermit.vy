@@ -27,6 +27,7 @@ struct TokenInfo:
     permit2_allowance: uint256
     symbol: String[100]
     vault_api: String[100]
+    vault_share_price: uint256
     latest: bool
 
 interface Permit2:
@@ -50,6 +51,7 @@ interface ERC20Detailed:
 
 interface Vault:
     def apiVersion() -> String[100]: view
+    def pricePerShare() -> uint256: view
 
 permit2: immutable(Permit2)
 registry_a: immutable(Registry)
@@ -119,6 +121,7 @@ def fetch_user_info(user: address) -> DynArray[TokenInfo, 500]:
                         permit2_allowance: permit2_allowance,
                         symbol: ERC20Detailed(token.address).symbol(),
                         vault_api: Vault(vault.address).apiVersion(),
+                        vault_share_price: Vault(vault.address).pricePerShare(),
                         latest: vault_id == num_vaults - 1,
                     }))
     
