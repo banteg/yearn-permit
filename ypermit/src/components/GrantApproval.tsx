@@ -1,5 +1,6 @@
 import { erc20_abi, erc20_abi_overrides } from "@/constants/abi";
 import { permit2 } from "@/constants/addresses";
+import { Token } from "@/types";
 import { Code, Flex, Link, Skeleton, Strong } from "@radix-ui/themes";
 import { Snail } from "lucide-react";
 import { maxUint256 } from "viem";
@@ -7,7 +8,13 @@ import { useAccount, useReadContract } from "wagmi";
 import { MyCallout } from "./MyCallout";
 import { TxButton } from "./TxButton";
 
-export function GrantApproval({ token }) {
+export function GrantApproval({
+  token,
+  set_busy,
+}: {
+  token: Token;
+  set_busy: Function;
+}) {
   const account = useAccount();
   const allowance = useReadContract({
     address: token.address,
@@ -37,10 +44,15 @@ export function GrantApproval({ token }) {
               functionName: "approve",
               args: [permit2, maxUint256],
             }}
+            set_busy={set_busy}
           ></TxButton>
           <Code>
             {token.symbol}.approve(
-            <Link href={`https://etherscan.io/address/${permit2}`} target="_blank" color="violet">
+            <Link
+              href={`https://etherscan.io/address/${permit2}`}
+              target="_blank"
+              color="violet"
+            >
               permit2
             </Link>
             , infinite)

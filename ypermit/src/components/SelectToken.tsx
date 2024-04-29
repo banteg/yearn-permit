@@ -110,7 +110,10 @@ export function TokenCard({
     <Skeleton loading={loading}>
       <Card
         key={token.address}
-        onClick={(e) => on_select(token)}
+        onClick={(e) => {
+          if (disabled) return;
+          on_select(token);
+        }}
         className={cn(
           "cursor-pointer",
           selected && "bg-slate-300",

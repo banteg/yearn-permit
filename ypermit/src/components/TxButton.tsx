@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
-export function TxButton({ label, payload }) {
+export function TxButton({
+  label,
+  payload,
+  set_busy,
+}: {
+  label: string;
+  payload: object;
+  set_busy: Function;
+}) {
   const query_client = useQueryClient();
   const [resolver, set_resolver] = useState(null);
   const {
@@ -16,6 +24,7 @@ export function TxButton({ label, payload }) {
       onError(error, variables, context) {
         // signature rejected or gas estimation failed
         toast.error(error.name, { description: error.message });
+        set_busy(false);
       },
       onSuccess(data, variables, context) {
         // tx broadcasted
@@ -50,6 +59,7 @@ export function TxButton({ label, payload }) {
   }
 
   useEffect(() => {
+    set_busy(false)
     if (!isSuccess) return;
     query_client.invalidateQueries();
     // sets the promise toast to success
@@ -59,7 +69,10 @@ export function TxButton({ label, payload }) {
   return (
     <>
       <Button
-        onClick={() => writeContract(payload)}
+        onClick={() => {
+          set_busy(true);
+          writeContract(payload);
+        }}
         disabled={isPending || isLoading}
       >
         {label}

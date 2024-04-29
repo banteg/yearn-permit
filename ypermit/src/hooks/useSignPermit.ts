@@ -4,7 +4,7 @@ import { Address } from "viem";
 import { useSignTypedData } from "wagmi";
 import { permit2 } from "../constants/addresses";
 
-interface Permit {
+export interface Permit {
   message: object;
   signature: string;
 }
@@ -17,6 +17,7 @@ export function useSignPermit() {
         set_permit({ message: variables.message, signature: signature });
       },
       onError(error, variables) {
+        set_permit(null);
         toast.error(error.name, { description: error.message });
       },
     },

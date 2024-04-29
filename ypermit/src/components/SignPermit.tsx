@@ -1,35 +1,23 @@
+import { useSignPermit } from "@/hooks/useSignPermit";
 import { Button, Code, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
-import { useSignTypedData } from "wagmi";
 import { permit2, ypermit } from "../constants/addresses";
 import { MyCallout } from "./MyCallout";
 
 export function SignPermit({ token, spender, permit, setPermit }) {
-  const { signTypedData } = useSignTypedData({
-    mutation: {
-      onSuccess(signature, variables) {
-        console.log("mut", signature, variables);
-        const args = [
-          variables.message.permitted.token,
-          variables.message.permitted.amount,
-          variables.message.deadline,
-          signature,
-        ];
-        setPermit(args);
-      },
-      onError(error, variables, context) {
-        toast(error.message);
-      },
-    },
-  });
-
+  const [amount, set_amount] = useState("0")
+  const signer = useSignPermit();
   const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));
+
+  useEffect(() => {
+    set_amount(formatUnits(token.balance, token.decimals))
+  }, [token.balance])
 
   return (
     <Flex direction="column" gap="4">
-      {permit.length ? (
+      {signer.permit !== null ? (
         <MyCallout
           color="violet"
           icon={<Rabbit size="1.3rem" />}
@@ -45,14 +33,14 @@ export function SignPermit({ token, spender, permit, setPermit }) {
         />
       )}
 
-      <label>
+      <div>
         <Text className="uppercase text-xs">deposit amount</Text>
-        <TextField.Root placeholder="deposit amount" size="3">
+        <TextField.Root placeholder="deposit amount" size="3" className="w-60" value={amount}>
           <TextField.Slot side="right" px="1">
             <Button>max</Button>
           </TextField.Slot>
         </TextField.Root>
-      </label>
+      </div>
       <Flex gap="2" className="items-baseline">
         <Button
           onClick={() =>
