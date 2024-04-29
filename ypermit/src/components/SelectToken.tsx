@@ -27,8 +27,8 @@ export function SelectToken({
   on_select,
   busy = false,
 }: {
-  tokens: Token[];
-  selected_token: Token;
+  tokens: Token[] | null;
+  selected_token: Token | null;
   on_select: Function;
   busy: boolean;
 }) {

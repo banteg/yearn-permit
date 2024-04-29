@@ -10,8 +10,8 @@ export function SupportedTokens({
   registry_tokens,
   user_tokens,
 }: {
-  registry_tokens: bigint;
-  user_tokens: number;
+  registry_tokens: bigint | null;
+  user_tokens: number | null;
 }) {
   // 1. loading from registry
   if (registry_tokens === null)

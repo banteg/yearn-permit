@@ -79,8 +79,8 @@ function App() {
 
   // ui steps
   const is_connected = account.isConnected;
-  const is_selected = selected_token !== null;
   const is_approved = selected_token?.permit2_allowance ?? 0n >= maxUint96;
+  const needs_approval = selected_token && !is_approved;
   const is_permitted = permit !== null;
 
   // invalidate permit by token address
@@ -98,7 +98,7 @@ function App() {
         <Logo />
         <SupportedTokens
           registry_tokens={num_tokens}
-          user_tokens={user_tokens?.length ?? null}
+          user_tokens={user_tokens ? user_tokens.length : null}
         />
         <SelectToken
           tokens={user_tokens}
@@ -106,7 +106,7 @@ function App() {
           on_select={(token: Token) => set_selected_token(token)}
           busy={is_busy}
         />
-        {is_selected && (
+        {needs_approval && (
           <GrantApproval token={selected_token} set_busy={set_busy} />
         )}
 

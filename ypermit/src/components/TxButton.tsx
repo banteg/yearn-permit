@@ -12,10 +12,10 @@ export function TxButton({
   cleanup = null,
 }: {
   label: string;
-  description: string;
+  description?: string | null;
   payload: object;
   set_busy: Function;
-  cleanup: Function | null;
+  cleanup?: Function | null;
 }) {
   const query_client = useQueryClient();
   const [resolver, set_resolver] = useState(null);

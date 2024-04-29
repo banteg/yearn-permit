@@ -1,3 +1,5 @@
+import { Address } from "viem";
+
 export const permit2_abi = [
   {
     inputs: [{ internalType: "uint256", name: "deadline", type: "uint256" }],
@@ -1611,6 +1613,6 @@ export const weth_abi = [
   },
 ] as const;
 
-export const erc20_abi_overrides = {
+export const erc20_abi_overrides: Record<Address, object> = {
   "0xdAC17F958D2ee523a2206206994597C13D831ec7": usdt_abi,
 };
