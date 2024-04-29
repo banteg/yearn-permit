@@ -13,7 +13,7 @@ import { Box, Container, Flex } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
-import { maxUint96 } from "viem";
+import { Address, maxUint96 } from "viem";
 import {
   useAccount,
   useConnect,
@@ -30,7 +30,6 @@ function Logo() {
   );
 }
 
-
 function App() {
   // account
   const account = useAccount();
@@ -38,7 +37,7 @@ function App() {
   const { disconnect } = useDisconnect();
 
   // app state
-  const [selected_token, set_selected_token] = useState<Token | null>(null);
+  const [selected, set_selected] = useState<Address | null>(null);
   const [permit, set_permit] = useState<Permit | null>(null);
   const [is_busy, set_busy] = useState(false);
 
@@ -63,19 +62,31 @@ function App() {
     : null;
 
   // computed lists of tokens and vaults of user
-  const user_tokens: Token[] | null = useMemo(() => {
-    return user_info.isSuccess
-      ? user_info.data.filter(
-          (value) => value.token_balance > 1n && value.latest
-        )
-      : null;
-  }, [user_info.data]);
+  const user_tokens: Token[] | null = useMemo(
+    () =>
+      user_info.isSuccess
+        ? user_info.data.filter(
+            (value) => value.token_balance > 1n && value.latest
+          )
+        : null,
+    [user_info.data]
+  );
 
-  const user_vaults: Token[] | null = useMemo(() => {
-    return user_info.isSuccess
-      ? user_info.data.filter((value) => value.vault_balance > 1n)
-      : null;
-  }, [user_info.data]);
+  const user_vaults: Token[] | null = useMemo(
+    () =>
+      user_info.isSuccess
+        ? user_info.data.filter((value) => value.vault_balance > 1n)
+        : null,
+    [user_info.data]
+  );
+
+  const selected_token: Token | null = useMemo(
+    () =>
+      user_tokens !== null
+        ? user_tokens.find((token) => token.token == selected)
+        : null,
+    [user_tokens, selected]
+  );
 
   // ui steps
   const is_connected = account.isConnected;
@@ -103,7 +114,7 @@ function App() {
         <SelectToken
           tokens={user_tokens}
           selected_token={selected_token}
-          on_select={(token: Token) => set_selected_token(token)}
+          on_select={(token: Token) => set_selected(token.token)}
           busy={is_busy}
         />
         {needs_approval && (
