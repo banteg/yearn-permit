@@ -1,0 +1,240 @@
+{
+  "format": "dpack-1",
+  "network": "ethereum",
+  "types": {
+    "UniswapV3Factory": {
+      "artifact": {
+        "/": "bafkreiecs7ltlmc2sg5rvlovum5t7hcf5bxuwhvpujdcd4vx2obnk25jhm"
+      },
+      "typename": "UniswapV3Factory"
+    },
+    "UniswapInterfaceMulticall": {
+      "artifact": {
+        "/": "bafkreibvnxd7qhm5ppxsc45r3gfp2ggp3wgx7nrz223rg5pglacwgufnve"
+      },
+      "typename": "UniswapInterfaceMulticall"
+    },
+    "Multicall2": {
+      "artifact": {
+        "/": "bafkreif5hugwwzhqaayfjujum2yj6aaj7bv6fyzpv5apdb4ndwwlyfraji"
+      },
+      "typename": "Multicall2"
+    },
+    "ProxyAdmin": {
+      "artifact": {
+        "/": "bafkreift2anfyw3xo2rpyqfpo4565jdp5tuizjknvcaukgupvf7wy22kry"
+      },
+      "typename": "ProxyAdmin"
+    },
+    "TickLens": {
+      "artifact": {
+        "/": "bafkreiao2uqriqw74ynntzti5k2llv6td3tik3mwgp6dvsbrbgjldd5z4y"
+      },
+      "typename": "TickLens"
+    },
+    "NFTDescriptor": {
+      "artifact": {
+        "/": "bafkreicwyd57wsz7b5a6lz3i24mgh2xldsdcyjc45chmzyzkrwtbhzogdu"
+      },
+      "typename": "NFTDescriptor"
+    },
+    "NonfungibleTokenPositionDescriptor": {
+      "artifact": {
+        "/": "bafkreieo6gqe5nbvvichcl7rr7yyzp4gc2vji427xyfv2e7cacjr2nojnq"
+      },
+      "typename": "NonfungibleTokenPositionDescriptor"
+    },
+    "NonfungiblePositionManager": {
+      "artifact": {
+        "/": "bafkreihu2zyfq4lh7tpughmajmgo5uu27kjspn55jo7zmkqhgzxqt64fdu"
+      },
+      "typename": "NonfungiblePositionManager"
+    },
+    "V3Migrator": {
+      "artifact": {
+        "/": "bafkreicl6vspjx5232txdogq6dflt27w4pexadbmku4wtaanztjuw7ompi"
+      },
+      "typename": "V3Migrator"
+    },
+    "QuoterV2": {
+      "artifact": {
+        "/": "bafkreieuydcmbrep3fynrn64vbv3b3qhwqrb773ctb44hbcvmyzyd4uc6e"
+      },
+      "typename": "QuoterV2"
+    },
+    "SwapRouter02": {
+      "artifact": {
+        "/": "bafkreierdwmfuxsh5kd5olxztorx5ml2hb4of62po3uoy54mgyhh4nb2iu"
+      },
+      "typename": "SwapRouter02"
+    },
+    "Permit2": {
+      "artifact": {
+        "/": "bafkreihkpy5ns73mfk3tolcorppq7uncohykehk4y6yc5yneuripguycwy"
+      },
+      "typename": "Permit2"
+    },
+    "UniversalRouter": {
+      "artifact": {
+        "/": "bafkreigprw4ahsfs4prrdtfjifjlvewc4oiffdhtljcxtqcnhmnqyijvfa"
+      },
+      "typename": "UniversalRouter"
+    },
+    "UniswapV3Staker": {
+      "artifact": {
+        "/": "bafkreigkgixpwv5ehyxaye44hlt2smsv6rx6gfvjnmc7qm6jukmtshfgla"
+      },
+      "typename": "UniswapV3Staker"
+    },
+    "Uni": {
+      "artifact": {
+        "/": "bafkreifocfyjpxvkajsriea3333s3kjsqmkxpsdaeqyzuel52wwcyepbru"
+      },
+      "typename": "Uni"
+    },
+    "UniswapV3Pool": {
+      "artifact": {
+        "/": "bafkreiaoslqt7asr3gxfddko2sbf45f5ad53xqh5otdzc36vfgwzhwhyv4"
+      },
+      "typename": "UniswapV3Pool"
+    }
+  },
+  "objects": {
+    "factory": {
+      "artifact": {
+        "/": "bafkreiecs7ltlmc2sg5rvlovum5t7hcf5bxuwhvpujdcd4vx2obnk25jhm"
+      },
+      "objectname": "factory",
+      "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "typename": "UniswapV3Factory"
+    },
+    "multicall": {
+      "artifact": {
+        "/": "bafkreibvnxd7qhm5ppxsc45r3gfp2ggp3wgx7nrz223rg5pglacwgufnve"
+      },
+      "objectname": "multicall",
+      "address": "0x1F98415757620B543A52E61c46B32eB19261F984",
+      "typename": "UniswapInterfaceMulticall"
+    },
+    "multicall2": {
+      "artifact": {
+        "/": "bafkreif5hugwwzhqaayfjujum2yj6aaj7bv6fyzpv5apdb4ndwwlyfraji"
+      },
+      "objectname": "multicall2",
+      "address": "0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696",
+      "typename": "Multicall2"
+    },
+    "proxy_admin": {
+      "artifact": {
+        "/": "bafkreift2anfyw3xo2rpyqfpo4565jdp5tuizjknvcaukgupvf7wy22kry"
+      },
+      "objectname": "proxy_admin",
+      "address": "0xB753548F6E010e7e680BA186F9Ca1BdAB2E90cf2",
+      "typename": "ProxyAdmin"
+    },
+    "tick_lens": {
+      "artifact": {
+        "/": "bafkreiao2uqriqw74ynntzti5k2llv6td3tik3mwgp6dvsbrbgjldd5z4y"
+      },
+      "objectname": "tick_lens",
+      "address": "0xbfd8137f7d1516D3ea5cA83523914859ec47F573",
+      "typename": "TickLens"
+    },
+    "nft_descriptor": {
+      "artifact": {
+        "/": "bafkreicwyd57wsz7b5a6lz3i24mgh2xldsdcyjc45chmzyzkrwtbhzogdu"
+      },
+      "objectname": "nft_descriptor",
+      "address": "0x42B24A95702b9986e82d421cC3568932790A48Ec",
+      "typename": "NFTDescriptor"
+    },
+    "nonfungible_token_position_descriptor": {
+      "artifact": {
+        "/": "bafkreieo6gqe5nbvvichcl7rr7yyzp4gc2vji427xyfv2e7cacjr2nojnq"
+      },
+      "objectname": "nonfungible_token_position_descriptor",
+      "address": "0x91ae842A5Ffd8d12023116943e72A606179294f3",
+      "typename": "NonfungibleTokenPositionDescriptor"
+    },
+    "transparent_upgradeable_proxy": {
+      "artifact": {
+        "/": "bafkreieo6gqe5nbvvichcl7rr7yyzp4gc2vji427xyfv2e7cacjr2nojnq"
+      },
+      "objectname": "transparent_upgradeable_proxy",
+      "address": "0xEe6A57eC80ea46401049E92587E52f5Ec1c24785",
+      "typename": "NonfungibleTokenPositionDescriptor"
+    },
+    "nonfungible_position_manager": {
+      "artifact": {
+        "/": "bafkreihu2zyfq4lh7tpughmajmgo5uu27kjspn55jo7zmkqhgzxqt64fdu"
+      },
+      "objectname": "nonfungible_position_manager",
+      "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+      "typename": "NonfungiblePositionManager"
+    },
+    "v3_migrator": {
+      "artifact": {
+        "/": "bafkreicl6vspjx5232txdogq6dflt27w4pexadbmku4wtaanztjuw7ompi"
+      },
+      "objectname": "v3_migrator",
+      "address": "0xA5644E29708357803b5A882D272c41cC0dF92B34",
+      "typename": "V3Migrator"
+    },
+    "quoter": {
+      "artifact": {
+        "/": "bafkreieuydcmbrep3fynrn64vbv3b3qhwqrb773ctb44hbcvmyzyd4uc6e"
+      },
+      "objectname": "quoter",
+      "address": "0x61fFE014bA17989E743c5F6cB21bF9697530B21e",
+      "typename": "QuoterV2"
+    },
+    "swap_router": {
+      "artifact": {
+        "/": "bafkreierdwmfuxsh5kd5olxztorx5ml2hb4of62po3uoy54mgyhh4nb2iu"
+      },
+      "objectname": "swap_router",
+      "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "typename": "SwapRouter02"
+    },
+    "permit_2": {
+      "artifact": {
+        "/": "bafkreihkpy5ns73mfk3tolcorppq7uncohykehk4y6yc5yneuripguycwy"
+      },
+      "objectname": "permit_2",
+      "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+      "typename": "Permit2"
+    },
+    "universal_router": {
+      "artifact": {
+        "/": "bafkreigprw4ahsfs4prrdtfjifjlvewc4oiffdhtljcxtqcnhmnqyijvfa"
+      },
+      "objectname": "universal_router",
+      "address": "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD",
+      "typename": "UniversalRouter"
+    },
+    "staker": {
+      "artifact": {
+        "/": "bafkreigkgixpwv5ehyxaye44hlt2smsv6rx6gfvjnmc7qm6jukmtshfgla"
+      },
+      "objectname": "staker",
+      "address": "0xe34139463bA50bD61336E0c446Bd8C0867c6fE65",
+      "typename": "UniswapV3Staker"
+    },
+    "uni": {
+      "artifact": {
+        "/": "bafkreifocfyjpxvkajsriea3333s3kjsqmkxpsdaeqyzuel52wwcyepbru"
+      },
+      "objectname": "uni",
+      "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+      "typename": "Uni"
+    },
+    "pool": {
+      "artifact": {
+        "/": "bafkreiaoslqt7asr3gxfddko2sbf45f5ad53xqh5otdzc36vfgwzhwhyv4"
+      },
+      "objectname": "pool",
+      "address": "0x8f8EF111B67C04Eb1641f5ff19EE54Cda062f163",
+      "typename": "UniswapV3Pool"
+    }
+  }
+}

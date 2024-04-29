@@ -115,9 +115,12 @@ def find_best_pools_for_tokens(tokens):
 
 def main():
     dev = accounts.test_accounts[0]
+    base_fee = chain.blocks[-1].base_fee
 
     weth = Contract("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
-    ypermit = project.YearnPermit.deploy(sender=dev)
+    ypermit = project.YearnPermit.deploy(
+        sender=dev, max_priority_fee=0, max_fee=base_fee
+    )
 
     # NOTE takes too long on fork so we hardcode
     # best_pools = find_best_pools_for_tokens(tokens)
@@ -143,7 +146,11 @@ def main():
         planner.v3_swap_exact_in(str(dev), ONE, 0, [str(weth), fee, token], False)
 
     uniswap.universal_router.execute(
-        *planner.build(), value=wrap_amount + ONE, sender=dev
+        *planner.build(),
+        value=wrap_amount + ONE,
+        sender=dev,
+        max_priority_fee=0,
+        max_fee=base_fee,
     )
 
     call = Call()

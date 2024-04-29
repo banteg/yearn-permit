@@ -1,5 +1,4 @@
 import { Box, Container, Flex, Grid } from "@radix-ui/themes";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { multicall } from "@wagmi/core";
 import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -304,7 +303,7 @@ function App() {
           }}
           set_busy={set_busy}
         ></TxButton>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </Flex>
       <Grid columns="4" gap="2">
         <TokenCard

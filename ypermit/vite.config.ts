@@ -10,7 +10,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
-    host: "ypermit.test",
-  },
+  // server: {
+  //   host: "ypermit.test",
+  // },
 });

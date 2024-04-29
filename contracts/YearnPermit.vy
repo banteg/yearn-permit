@@ -92,7 +92,7 @@ def deposit(token: address, amount: uint256, deadline: uint256, signature: Bytes
 @external
 def fetch_user_info(user: address) -> DynArray[TokenInfo, 500]:
     """
-    @notice Find all vaults a user has a balance in.
+    @notice Find all tokens and vaults where the user has a balance.
     """
     vaults: DynArray[TokenInfo, 500] = empty(DynArray[TokenInfo, 500])
     for registry in [registry_a, registry_b]:
