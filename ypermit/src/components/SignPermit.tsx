@@ -2,7 +2,7 @@ import { Permit, useSignPermit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
 import { Button, Code, Flex, Link, Text, TextField } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import { ypermit } from "../constants/addresses";
 import { MyCallout } from "./MyCallout";
@@ -21,10 +21,26 @@ export function SignPermit({
   const [amount, set_amount] = useState("0");
   const signer = useSignPermit({ set_permit });
   const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));
+  const amount_wei = useMemo(
+    () => parseUnits(amount, token.decimals),
+    [amount, token]
+  );
 
   useEffect(() => {
     set_amount(formatUnits(token.balance, token.decimals));
   }, [token.balance]);
+
+  useEffect(() => {
+    if (permit === null) return;
+    if (
+      permit.message.permitted.token !== token.address ||
+      permit.message.spender != spender ||
+      permit.message.permitted.amount !== amount_wei
+    ) {
+      console.log("invalidate permit");
+      set_permit(null);
+    }
+  }, [permit, token, spender, amount_wei]);
 
   return (
     <Flex direction="column" gap="4">
