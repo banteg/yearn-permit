@@ -14,11 +14,13 @@ import {
 import { Sparkle } from "lucide-react";
 import { Address, maxUint96 } from "viem";
 
-const skeletoken = {
+// @ts-ignore
+const skeletoken: Token = {
   symbol: "YFI",
   token_balance: 0n,
   vault_balance: 0n,
-  decimals: 18,
+  vault_share_price: 1n,
+  decimals: 1,
 };
 
 export function TokenLogo({ address }: { address: Address }) {
@@ -123,7 +125,12 @@ export function TokenCard({
             W {from_wei(token.token_balance, token.decimals)} {token.symbol}
           </Text>
           <Text truncate className="text-xs">
-            Y {from_wei(token.vault_balance, token.decimals)} {token.symbol}
+            Y{" "}
+            {from_wei(
+              token.vault_balance * token.vault_share_price,
+              token.decimals * 2
+            )}{" "}
+            {token.symbol}
           </Text>
         </Flex>
       </Card>
