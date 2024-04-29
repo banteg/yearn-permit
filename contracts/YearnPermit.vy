@@ -122,7 +122,7 @@ def fetch_user_info(user: address) -> DynArray[TokenInfo, 500]:
                         symbol: ERC20Detailed(token.address).symbol(),
                         vault_api: Vault(vault.address).apiVersion(),
                         vault_share_price: Vault(vault.address).pricePerShare(),
-                        latest: vault_id == num_vaults - 1,
+                        latest: registry_b.latestVault(token.address) == vault.address,
                     }))
     
     return vaults
