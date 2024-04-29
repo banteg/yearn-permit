@@ -6,10 +6,12 @@ import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 export function TxButton({
   label,
+  description = null,
   payload,
   set_busy,
 }: {
   label: string;
+  description: string;
   payload: object;
   set_busy: Function;
 }) {
@@ -43,9 +45,9 @@ export function TxButton({
         set_resolver(() => resolve);
       }),
       {
-        loading: `<Strong>${label}</Strong> transaction submitted`,
+        loading: `<Strong>${description ?? label}</Strong> transaction submitted`,
         success: (message) => {
-          return `<Strong>${label}</Strong> transaction confirmed`;
+          return `<Strong>${description ?? label}</Strong> transaction confirmed`;
         },
         error: "error",
         action: {

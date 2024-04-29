@@ -38,6 +38,7 @@ export function GrantApproval({
         <Flex gap="2" className="items-baseline">
           <TxButton
             label="approve"
+            description={`${token.symbol} approve`}
             payload={{
               abi: erc20_abi_overrides[token.address] ?? erc20_abi,
               address: token.address,
