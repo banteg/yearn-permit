@@ -5,4 +5,4 @@ export const registries = [
 ];
 export const weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 export const latest_registry = registries[registries.length - 1];
-export const ypermit = "0xf93b0549cD50c849D792f0eAE94A598fA77C7718";
+export const ypermit = "0x8cea85ec7f3d314c4d144e34f2206c8ac0bbada1";
