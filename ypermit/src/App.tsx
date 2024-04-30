@@ -139,7 +139,7 @@ function App() {
         )}
 
         {/* todo migrations */}
-        {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
+        <ReactQueryDevtools />
       </Flex>
       <Toaster richColors toastOptions={{ duration: 10000 }} />
     </Container>
