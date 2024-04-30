@@ -143,7 +143,7 @@ function App() {
             <SelectToken tokens={user_vaults} busy={is_busy} />
           </Flex>
         )}
-        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+        {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
       </Flex>
       <Toaster richColors toastOptions={{ duration: 10000 }} />
     </Container>

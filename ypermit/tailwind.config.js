@@ -70,11 +70,16 @@ module.exports = {
           "0%, 100%": { transform: "rotate(-3deg)" },
           "50%": { transform: "rotate(3deg)" },
         },
+        hop: {
+          "50%": { transform: "rotate(180deg) translateX(-8px) rotate(-180deg)" },
+          "100%": {transform: "rotate(180deg) rotate(-180deg)"},
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         wiggle: "wiggle .2s ease-in-out infinite",
+        hop: "hop 0.7s linear infinite",
       },
     },
   },

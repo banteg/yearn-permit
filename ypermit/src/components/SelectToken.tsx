@@ -121,7 +121,7 @@ export function TokenCard({
           style={{ width: `${share_in_vault * 100}%` }}
         ></div>
         <Flex direction="column" gap="1">
-          <Flex gap="2">
+          <Flex gap="2" pb="1">
             <TokenLogo address={token.token} />
             <Text truncate>{token.symbol}</Text>
             <Box flexGrow="1"></Box>
