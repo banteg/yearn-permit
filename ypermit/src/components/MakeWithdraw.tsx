@@ -23,6 +23,10 @@ export function MakeWithdraw({ token, busy, set_busy }: MakeWithdrawProps) {
 
   const max = to_wei(amount, token.decimals) === max_wei;
 
+  const shares_wei =
+    (to_wei(amount, token.decimals) * 10n ** BigInt(token.decimals)) /
+    token.vault_share_price;
+
   function validate_set_amount(value: string) {
     if (value === "max") {
       set_amount(from_wei(max_wei, token.decimals));
@@ -51,12 +55,14 @@ export function MakeWithdraw({ token, busy, set_busy }: MakeWithdrawProps) {
     address: token.vault,
     abi: vault_abi,
     functionName: "withdraw",
-    args: max ? [] : [to_wei(amount, token.decimals)],
+    args: max ? [] : [shares_wei],
   };
 
   return (
     <Flex direction="column" gap="4">
-      <Text size="5">withdraw <TokenLogo address={token.vault} /> y{token.symbol}</Text>
+      <Text size="5">
+        withdraw <TokenLogo address={token.vault} /> y{token.symbol}
+      </Text>
       <InputAmount
         amount={amount}
         set_amount={validate_set_amount}
