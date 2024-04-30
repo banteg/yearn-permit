@@ -79,7 +79,7 @@ export function SignPermit({
       )}
 
       <div>
-        <Text className="uppercase text-xs">deposit amount</Text>
+        <Text>deposit amount</Text>
         <TextField.Root
           placeholder="deposit amount"
           size="3"

@@ -11,7 +11,7 @@ import {
   Text,
   Tooltip,
 } from "@radix-ui/themes";
-import { Sparkle } from "lucide-react";
+import { Rabbit, Sparkle, Vault, WalletMinimal } from "lucide-react";
 import { Address, maxUint96 } from "viem";
 
 // @ts-ignore
@@ -135,16 +135,18 @@ export function TokenCard({
               </Tooltip>
             )}
           </Flex>
-          <Text truncate className="text-xs">
-            W {from_wei(token.token_balance, token.decimals)} {token.symbol}
+          <Text truncate size="1">
+            <WalletMinimal className="inline w-[1rem] text-slate-400 -translate-y-[1px]" />
+            <Text>
+              {" "}{from_wei(token.token_balance, token.decimals)} {token.symbol}
+            </Text>
           </Text>
-          <Text truncate className="text-xs">
-            Y{" "}
-            {from_wei(
-              token.vault_balance * token.vault_share_price,
-              token.decimals * 2
-            )}{" "}
+          <Text truncate size="1">
+            <Rabbit className="inline w-[1rem] text-violet-400 -translate-y-[2px]" />
+            <Text>
+            {" "}{vault_balance}{" "}
             {token.symbol}
+            </Text>
           </Text>
         </Flex>
       </Card>
