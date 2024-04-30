@@ -8,6 +8,7 @@ import { Address } from "viem";
 import { ypermit } from "../constants/addresses";
 import { ExplorerAddress } from "./ExplorerLink";
 import { MyCallout } from "./MyCallout";
+import { InputAmount } from "./InputAmount";
 
 export function SignPermit({
   token,
@@ -45,6 +46,7 @@ export function SignPermit({
   }, [token.token_balance]);
 
   function validate_set_amount(value: string) {
+    if (value === "max") value = from_wei(token.token_balance, token.decimals);
     try {
       to_wei(value, token.decimals);
     } catch (error) {
@@ -81,31 +83,13 @@ export function SignPermit({
         />
       )}
 
-      <div>
-        <Text>deposit amount</Text>
-        <TextField.Root
-          placeholder="deposit amount"
-          size="3"
-          className="w-60"
-          value={amount}
-          onChange={(e) => validate_set_amount(e.target.value)}
-          disabled={busy}
-        >
-          <TextField.Slot side="right" px="1">
-            <Button
-              onClick={() =>
-                validate_set_amount(
-                  from_wei(token.token_balance, token.decimals)
-                )
-              }
-              variant="surface"
-              disabled={busy}
-            >
-              max
-            </Button>
-          </TextField.Slot>
-        </TextField.Root>
-      </div>
+      <InputAmount
+        label="deposit amount"
+        amount={amount}
+        set_amount={validate_set_amount}
+        busy={busy}
+      />
+
       {is_permit_dirty && (
         <Flex gap="2" className="items-baseline">
           <Button

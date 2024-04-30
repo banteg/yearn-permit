@@ -20,6 +20,7 @@ import {
   useReadContract,
   useReadContracts,
 } from "wagmi";
+import { MakeWithdraw } from "./components/MakeWithdraw";
 
 function App() {
   // app state
@@ -89,7 +90,10 @@ function App() {
     selected_token && selected_token.permit2_allowance >= maxUint96;
   const needs_approval = selected_token && !is_approved;
   const is_permitted = permit !== null;
-  const has_balance = !!selected_token && selected_token.token_balance > 1n
+  const has_token_balance =
+    !!selected_token && selected_token.token_balance > 1n;
+  const has_vault_balance =
+    !!selected_token && selected_token.vault_balance > 1n;
   const have_migrations = !!user_vaults?.length;
 
   // invalidate permit by token address
@@ -119,7 +123,7 @@ function App() {
           <GrantApproval token={selected_token} set_busy={set_busy} />
         )}
 
-        {is_approved && has_balance && (
+        {is_approved && has_token_balance && (
           <SignPermit
             token={selected_token}
             spender={ypermit}
@@ -136,6 +140,8 @@ function App() {
             set_busy={set_busy}
           />
         )}
+
+        {has_vault_balance && <MakeWithdraw token={selected_token} />}
 
         {/* todo migrations */}
         {have_migrations && (
