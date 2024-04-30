@@ -1,4 +1,6 @@
+import { Text } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
+import { useAccount } from "wagmi";
 
 export function LoadingBunny() {
   return (
@@ -13,29 +15,43 @@ export function SupportedTokens({
   registry_tokens: bigint | null;
   user_tokens: number | null;
 }) {
+  const account = useAccount();
   // 1. loading from registry
   if (registry_tokens === null)
     return (
-      <div className="text-xl text-violet-500">
+      <Text size="5" className="text-violet-500">
         loading from registry… <LoadingBunny />
-      </div>
+      </Text>
     );
-  // 2. loading user balances
+  // 2. disconnected
+  if (account.status === "disconnected") {
+    return (
+      <Text size="5">
+        <span>supports {registry_tokens.toString()} tokens, </span>
+        <span className="text-violet-500">
+          connect wallet to load <LoadingBunny />
+        </span>
+      </Text>
+    );
+  }
+  // 3. loading user balances
   if (user_tokens === null) {
     return (
-      <div className="text-xl">
+      <Text size="5">
         <span>supports {registry_tokens.toString()} tokens, </span>
         <span className="text-violet-500">
           loading your tokens… <LoadingBunny />
         </span>
-      </div>
+      </Text>
     );
   }
-  // 3. fully loaded
+  // 4. fully loaded
   return (
-    <div className="text-xl">
-      supports {registry_tokens.toString()} tokens, you have {user_tokens}{" "}
-      tokens
-    </div>
+    <>
+      <Text size="5">
+        supports {registry_tokens.toString()} tokens, you have {user_tokens}{" "}
+        tokens
+      </Text>
+    </>
   );
 }
