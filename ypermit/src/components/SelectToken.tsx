@@ -117,7 +117,7 @@ export function TokenCard({
         )}
       >
         <div
-          className="bg-violet-500 bottom-0 left-0 absolute h-[3px] z-10"
+          className="bg-violet-500 bottom-0 left-0 absolute h-[3px] transition-all duration-300"
           style={{ width: `${share_in_vault * 100}%` }}
         ></div>
         <Flex direction="column" gap="1">
@@ -138,14 +138,15 @@ export function TokenCard({
           <Text truncate size="1">
             <WalletMinimal className="inline w-[1rem] text-slate-400 -translate-y-[1px]" />
             <Text>
-              {" "}{from_wei(token.token_balance, token.decimals)} {token.symbol}
+              {" "}
+              {from_wei(token.token_balance, token.decimals)} {token.symbol}
             </Text>
           </Text>
           <Text truncate size="1">
             <Rabbit className="inline w-[1rem] text-violet-400 -translate-y-[2px]" />
             <Text>
-            {" "}{vault_balance}{" "}
-            {token.symbol}
+              {" "}
+              {vault_balance} {token.symbol}
             </Text>
           </Text>
         </Flex>
