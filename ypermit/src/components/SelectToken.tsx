@@ -101,7 +101,7 @@ export function TokenCard({
     Number(vault_balance) > 0
       ? Number(vault_balance) / (Number(token_balance) + Number(vault_balance))
       : 0;
-  console.log(share_in_vault);
+
   return (
     <Skeleton loading={loading}>
       <Card
