@@ -8,17 +8,15 @@ import { registry_abi, ypermit_abi } from "@/constants/abi";
 import { registries, ypermit } from "@/constants/addresses";
 import { Permit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
-import { Container, Flex, Text } from "@radix-ui/themes";
+import { Container, Flex } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { Address, maxUint96 } from "viem";
 import {
   useAccount,
-  useConnect,
-  useDisconnect,
   useReadContract,
-  useReadContracts,
+  useReadContracts
 } from "wagmi";
 import { MakeWithdraw } from "./components/MakeWithdraw";
 
@@ -40,6 +38,7 @@ function App() {
 
   // read number of supported tokens
   const registry_num_tokens = useReadContracts({
+    // @ts-ignore
     contracts: registries.map((registry) => ({
       address: registry,
       abi: registry_abi,
@@ -66,16 +65,6 @@ function App() {
     [user_info.data]
   );
 
-  const user_vaults: Token[] | null = useMemo(
-    () =>
-      user_info.isSuccess
-        ? user_info.data.filter(
-            (value) => !value.latest && value.vault_balance > 1n
-          )
-        : null,
-    [user_info.data]
-  );
-
   // @ts-ignore
   const selected_token: Token | null = useMemo(
     () =>
@@ -94,7 +83,7 @@ function App() {
     !!selected_token && selected_token.token_balance > 1n;
   const has_vault_balance =
     !!selected_token && selected_token.vault_balance > 1n;
-  const have_migrations = !!user_vaults?.length;
+  // const have_migrations = !!user_vaults?.length;
 
   // invalidate permit by token address
   useEffect(() => {
@@ -134,7 +123,7 @@ function App() {
         )}
         {is_permitted && (
           <MakeDeposit
-            token={selected_token}
+            token={selected_token!}
             permit={permit}
             set_permit={set_permit}
             set_busy={set_busy}
@@ -150,12 +139,6 @@ function App() {
         )}
 
         {/* todo migrations */}
-        {have_migrations && (
-          <Flex direction="column" gap="4">
-            <Text size="5">migration available</Text>
-            <SelectToken tokens={user_vaults} busy={is_busy} />
-          </Flex>
-        )}
         {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
       </Flex>
       <Toaster richColors toastOptions={{ duration: 10000 }} />

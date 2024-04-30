@@ -11,7 +11,7 @@ import {
   Text,
   Tooltip,
 } from "@radix-ui/themes";
-import { Rabbit, Sparkle, Vault, WalletMinimal } from "lucide-react";
+import { Rabbit, Sparkle, WalletMinimal } from "lucide-react";
 import { Address, maxUint96 } from "viem";
 
 // @ts-ignore
@@ -105,7 +105,7 @@ export function TokenCard({
   return (
     <Skeleton loading={loading}>
       <Card
-        onClick={(e) => {
+        onClick={() => {
           if (disabled) return;
           on_select(token);
         }}

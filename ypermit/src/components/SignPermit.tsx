@@ -1,7 +1,7 @@
 import { Permit, useSignPermit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
 import { from_wei, to_wei } from "@/utils";
-import { Button, Code, Flex, Text, TextField } from "@radix-ui/themes";
+import { Button, Code, Flex, Text } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Address } from "viem";

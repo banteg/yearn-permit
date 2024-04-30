@@ -18,19 +18,19 @@ export function TxButton({
   cleanup?: Function | null;
 }) {
   const query_client = useQueryClient();
-  const [resolver, set_resolver] = useState(null);
+  const [resolver, set_resolver] = useState<Function | null>(null);
   const {
     data: txn_hash,
     isPending,
     writeContract,
   } = useWriteContract({
     mutation: {
-      onError(error, variables, context) {
+      onError(error) {
         // signature rejected or gas estimation failed
         toast.error(error.name, { description: error.message });
         set_busy(false);
       },
-      onSuccess(data, variables, context) {
+      onSuccess(data) {
         // tx broadcasted
         toast_broadcast(data);
       },
@@ -40,7 +40,7 @@ export function TxButton({
     hash: txn_hash,
   });
 
-  function toast_broadcast(txn_hash) {
+  function toast_broadcast(txn_hash: string) {
     toast.promise(
       new Promise((resolve) => {
         // save to resolve from the effect when we get a receipt
@@ -48,7 +48,7 @@ export function TxButton({
       }),
       {
         loading: `<Strong>${description ?? label}</Strong> transaction submitted`,
-        success: (message) => {
+        success: () => {
           return `<Strong>${description ?? label}</Strong> transaction confirmed`;
         },
         error: "error",
@@ -68,7 +68,7 @@ export function TxButton({
     if (cleanup !== null) cleanup();
     query_client.invalidateQueries();
     // sets the promise toast to success
-    resolver();
+    resolver!();
   }, [isSuccess]);
 
   return (
@@ -76,6 +76,7 @@ export function TxButton({
       <Button
         onClick={() => {
           set_busy(true);
+          // @ts-ignore
           writeContract(payload);
         }}
         disabled={isPending || isLoading}

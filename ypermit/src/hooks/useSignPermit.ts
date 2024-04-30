@@ -19,7 +19,7 @@ export function useSignPermit({ set_permit }: { set_permit: Function }) {
       onSuccess(signature, variables) {
         set_permit({ message: variables.message, signature: signature });
       },
-      onError(error, variables) {
+      onError(error) {
         set_permit(null);
         toast.error(error.name, { description: error.message });
       },
