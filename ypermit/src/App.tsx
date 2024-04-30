@@ -22,12 +22,8 @@ import {
 } from "wagmi";
 
 function App() {
-  // account
-  const account = useAccount();
-  const { connectors, connect, status, error } = useConnect();
-  const { disconnect } = useDisconnect();
-
   // app state
+  const account = useAccount();
   const [selected, set_selected] = useState<Address | null>(null);
   const [permit, set_permit] = useState<Permit | null>(null);
   const [is_busy, set_busy] = useState(false);
@@ -89,7 +85,6 @@ function App() {
   );
 
   // ui steps
-  const is_connected = account.isConnected;
   const is_approved =
     selected_token && selected_token.permit2_allowance >= maxUint96;
   const needs_approval = selected_token && !is_approved;
@@ -148,7 +143,7 @@ function App() {
             <SelectToken tokens={user_vaults} busy={is_busy} />
           </Flex>
         )}
-        <ReactQueryDevtools initialIsOpen={false} />
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </Flex>
       <Toaster richColors toastOptions={{ duration: 10000 }} />
     </Container>
