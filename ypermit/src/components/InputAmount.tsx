@@ -1,21 +1,17 @@
-import { Box, Button, Text, TextField } from "@radix-ui/themes";
+import { Box, Button, TextField } from "@radix-ui/themes";
 
 export function InputAmount({
-  label,
   amount,
   set_amount,
   busy = false,
 }: {
-  label: string;
   amount: string;
   set_amount: Function;
-  busy: bool;
+  busy: boolean;
 }) {
   return (
     <Box>
-      <Text>{label}</Text>
       <TextField.Root
-        placeholder={label}
         size="3"
         className="w-60"
         value={amount}

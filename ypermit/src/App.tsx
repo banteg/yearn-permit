@@ -141,7 +141,13 @@ function App() {
           />
         )}
 
-        {has_vault_balance && <MakeWithdraw token={selected_token} />}
+        {has_vault_balance && (
+          <MakeWithdraw
+            token={selected_token}
+            busy={is_busy}
+            set_busy={set_busy}
+          />
+        )}
 
         {/* todo migrations */}
         {have_migrations && (

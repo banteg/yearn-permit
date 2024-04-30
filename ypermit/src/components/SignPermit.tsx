@@ -9,6 +9,7 @@ import { ypermit } from "../constants/addresses";
 import { ExplorerAddress } from "./ExplorerLink";
 import { MyCallout } from "./MyCallout";
 import { InputAmount } from "./InputAmount";
+import { TokenLogo } from "./SelectToken";
 
 export function SignPermit({
   token,
@@ -53,7 +54,7 @@ export function SignPermit({
       return;
     }
     const wei = to_wei(value, token.decimals);
-    if (wei < 0) {
+    if (wei < 0n) {
       set_amount("0");
     } else if (wei > token.token_balance) {
       set_amount(from_wei(token.token_balance, token.decimals));
@@ -83,8 +84,8 @@ export function SignPermit({
         />
       )}
 
+      <Text size="5">deposit <TokenLogo address={token.token} /> {token.symbol}</Text>
       <InputAmount
-        label="deposit amount"
         amount={amount}
         set_amount={validate_set_amount}
         busy={busy}
