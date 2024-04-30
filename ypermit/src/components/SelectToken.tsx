@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Token } from "@/types";
-import { from_wei, range } from "@/utils";
+import { format_wei, from_wei, range } from "@/utils";
 import {
   Avatar,
   Box,
@@ -97,6 +97,10 @@ export function TokenCard({
     token.vault_balance * token.vault_share_price,
     token.decimals * 2
   );
+  const vault_balance_fmt = format_wei(
+    token.vault_balance * token.vault_share_price,
+    token.decimals * 2
+  );
   const share_in_vault =
     Number(vault_balance) > 0
       ? Number(vault_balance) / (Number(token_balance) + Number(vault_balance))
@@ -139,14 +143,14 @@ export function TokenCard({
             <WalletMinimal className="inline w-[1rem] text-slate-400 -translate-y-[1px]" />
             <Text>
               {" "}
-              {from_wei(token.token_balance, token.decimals)} {token.symbol}
+              {format_wei(token.token_balance, token.decimals)} {token.symbol}
             </Text>
           </Text>
           <Text truncate size="1">
             <Rabbit className="inline w-[1rem] text-violet-400 -translate-y-[2px]" />
             <Text>
               {" "}
-              {vault_balance} {token.symbol}
+              {vault_balance_fmt} {token.symbol}
             </Text>
           </Text>
         </Flex>
