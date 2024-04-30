@@ -60,6 +60,9 @@ export function SignPermit({
     }
   }
 
+  const is_permit_dirty =
+    permit === null || permit.message.permitted.amount !== amount_wei;
+
   return (
     <Flex direction="column" gap="4">
       {permit !== null ? (
@@ -67,7 +70,7 @@ export function SignPermit({
           color="violet"
           icon={<Rabbit size="1.3rem" />}
           title="have permit"
-          description={permit.signature}
+          description="you are all set to deposit your tokens into a vault"
         />
       ) : (
         <MyCallout
@@ -95,6 +98,7 @@ export function SignPermit({
                   from_wei(token.token_balance, token.decimals)
                 )
               }
+              variant="surface"
               disabled={busy}
             >
               max
@@ -102,30 +106,33 @@ export function SignPermit({
           </TextField.Slot>
         </TextField.Root>
       </div>
-      <Flex gap="2" className="items-baseline">
-        <Button
-          onClick={() =>
-            signer.sign_permit(
-              token.token,
-              spender,
-              to_wei(amount, token.decimals),
-              deadline, // use deadline as nonce
-              deadline
-            )
-          }
-          disabled={busy}
-        >
-          permit
-        </Button>
-        <Code>
-          <ExplorerAddress address={token.token}>
-            {token.symbol}
-          </ExplorerAddress>
-          .permit(
-          <ExplorerAddress address={ypermit}>ypermit</ExplorerAddress>,{" "}
-          {from_wei(amount_wei, token.decimals)})
-        </Code>
-      </Flex>
+      {is_permit_dirty && (
+        <Flex gap="2" className="items-baseline">
+          <Button
+            onClick={() =>
+              signer.sign_permit(
+                token.token,
+                spender,
+                to_wei(amount, token.decimals),
+                deadline, // use deadline as nonce
+                deadline
+              )
+            }
+            variant={is_permit_dirty ? "solid" : "surface"}
+            disabled={busy}
+          >
+            permit
+          </Button>
+          <Code>
+            <ExplorerAddress address={token.token}>
+              {token.symbol}
+            </ExplorerAddress>
+            .permit(
+            <ExplorerAddress address={ypermit}>ypermit</ExplorerAddress>,{" "}
+            {from_wei(amount_wei, token.decimals)})
+          </Code>
+        </Flex>
+      )}
     </Flex>
   );
 }

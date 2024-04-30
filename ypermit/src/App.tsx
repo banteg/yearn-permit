@@ -89,6 +89,7 @@ function App() {
     selected_token && selected_token.permit2_allowance >= maxUint96;
   const needs_approval = selected_token && !is_approved;
   const is_permitted = permit !== null;
+  const has_balance = !!selected_token && selected_token.token_balance > 1n
   const have_migrations = !!user_vaults?.length;
 
   // invalidate permit by token address
@@ -118,7 +119,7 @@ function App() {
           <GrantApproval token={selected_token} set_busy={set_busy} />
         )}
 
-        {is_approved && (
+        {is_approved && has_balance && (
           <SignPermit
             token={selected_token}
             spender={ypermit}
