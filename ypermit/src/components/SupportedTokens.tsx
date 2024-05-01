@@ -42,7 +42,7 @@ export function SupportedTokens({
       <Text size="5">
         <span>supports {registry_tokens.toString()} tokens, </span>
         <span className="text-violet-500">
-          connect wallet to load <LoadingBunny animation="animate-wiggle" />
+          connect wallet above <LoadingBunny animation="animate-wiggle" />
         </span>
       </Text>
     );
