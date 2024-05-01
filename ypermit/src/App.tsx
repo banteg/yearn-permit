@@ -93,7 +93,6 @@ function App() {
   return (
     <Container
       maxWidth="40rem"
-      py="4"
       m={{ initial: "0.5rem", sm: "0" }}
       pb="5rem"
     >
