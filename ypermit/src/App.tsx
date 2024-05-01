@@ -8,7 +8,7 @@ import { registry_abi, ypermit_abi } from "@/constants/abi";
 import { registries, ypermit } from "@/constants/addresses";
 import { Permit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
-import { Container, Flex, Code } from "@radix-ui/themes";
+import { Container, Flex } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
