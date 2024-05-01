@@ -8,17 +8,13 @@ import { registry_abi, ypermit_abi } from "@/constants/abi";
 import { registries, ypermit } from "@/constants/addresses";
 import { Permit } from "@/hooks/useSignPermit";
 import { Token } from "@/types";
-import { Container, Flex } from "@radix-ui/themes";
+import { Container, Flex, Code } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { Address, maxUint96 } from "viem";
-import {
-  useAccount,
-  useReadContract,
-  useReadContracts
-} from "wagmi";
-import { MakeWithdraw } from "./components/MakeWithdraw";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { MakeWithdraw } from "@/components/MakeWithdraw";
 
 function App() {
   // app state
@@ -95,7 +91,12 @@ function App() {
   }, [permit, selected_token]);
 
   return (
-    <Container width="40rem" py="4">
+    <Container
+      maxWidth="40rem"
+      py="4"
+      m={{ initial: "0.5rem", sm: "0" }}
+      pb="5rem"
+    >
       <Flex direction="column" gap="4" className="">
         <Logo />
         <SupportedTokens

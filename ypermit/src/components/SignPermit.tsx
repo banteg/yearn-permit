@@ -108,7 +108,7 @@ export function SignPermit({
           >
             permit
           </Button>
-          <Code>
+          <Code truncate>
             <ExplorerAddress address={token.token}>
               {token.symbol}
             </ExplorerAddress>

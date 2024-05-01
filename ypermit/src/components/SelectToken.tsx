@@ -48,7 +48,7 @@ export function SelectToken({
 }) {
   if (tokens === null) {
     return (
-      <Grid columns="4" gap="2">
+      <Grid columns={{initial: "2", sm: "4"}} gap="2">
         {range(4).map((i) => (
           // @ts-ignore
           <TokenCard key={i} token={skeletoken} loading={true} />
@@ -62,7 +62,7 @@ export function SelectToken({
   }
 
   return (
-    <Grid columns="4" gap="2">
+    <Grid columns={{initial: "2", sm: "4"}} gap="2">
       {tokens.map((token) => (
         <TokenCard
           key={token.token}

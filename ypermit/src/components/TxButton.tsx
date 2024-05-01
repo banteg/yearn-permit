@@ -63,8 +63,8 @@ export function TxButton({
   }
 
   useEffect(() => {
-    set_busy(false);
     if (!isSuccess) return;
+    set_busy(false);
     if (cleanup !== null) cleanup();
     query_client.invalidateQueries();
     // sets the promise toast to success
