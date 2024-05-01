@@ -20,11 +20,11 @@ export function MyCallout({
       <Callout.Root color={color} variant="soft">
         <Callout.Icon>{icon}</Callout.Icon>
         {/* @ts-ignore */}
-        <Callout.Text as="div" truncate>
+        <Callout.Text as="div">
           <Text as="p">
             <Strong>{title}</Strong>
           </Text>
-          <Text truncate as="p">
+          <Text as="p">
             {description}
           </Text>
         </Callout.Text>
