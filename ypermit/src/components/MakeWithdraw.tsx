@@ -61,7 +61,7 @@ export function MakeWithdraw({ token, busy, set_busy }: MakeWithdrawProps) {
   return (
     <Flex direction="column" gap="4">
       <Text size="5">
-        withdraw <TokenLogo address={token.vault} /> y{token.symbol}
+        withdraw <TokenLogo address={token.vault} /> yv{token.symbol}
       </Text>
       <InputAmount
         amount={amount}
@@ -77,7 +77,7 @@ export function MakeWithdraw({ token, busy, set_busy }: MakeWithdrawProps) {
         />
         <Code truncate>
           <ExplorerAddress address={token.vault}>
-            y{token.symbol}
+            yv{token.symbol}
           </ExplorerAddress>
           .withdraw({max ? "" : amount})
         </Code>
