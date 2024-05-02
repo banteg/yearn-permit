@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  ol[data-sonner-toaster] > li > div[data-content] > div[data-description] {
+    white-space: pre-wrap !important;
+  }
+}
