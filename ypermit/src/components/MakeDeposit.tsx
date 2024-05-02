@@ -1,4 +1,5 @@
 import { TxButton } from "@/components/TxButton";
+import { ypermit_abi } from "@/constants/abi";
 import { ypermit } from "@/constants/addresses";
 import { useDepositArgs } from "@/hooks/useDepositArgs";
 import type { Permit } from "@/types";
@@ -22,14 +23,25 @@ export function MakeDeposit({
 	busy,
 	set_busy,
 }: MakeDepositProps) {
-	const args = useDepositArgs(permit);
+	const args = permit !== null && [
+		permit.message.permitted.token,
+		permit.message.permitted.amount,
+		permit.message.deadline,
+		permit.signature,
+	];
+
 	if (!token) return;
 	return (
 		<Flex gap="2" className="items-baseline">
 			<TxButton
 				label="deposit"
 				description={`${token.symbol} deposit`}
-				payload={args}
+				payload={{
+					address: ypermit,
+					abi: ypermit_abi,
+					functionName: "deposit",
+					args: args,
+				}}
 				disabled={busy}
 				set_busy={set_busy}
 				cleanup={() => {

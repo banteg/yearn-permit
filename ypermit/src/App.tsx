@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { type Address, maxUint96 } from "viem";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { ManageTokens } from "./components/ManageTokens";
 import { MigrateVaults } from "./components/MigrateVaults";
 import { MyCallout } from "./components/MyCallout";
 import type { Permit } from "./types";
@@ -88,7 +89,7 @@ function App() {
 	// invalidate permit by token address
 	useEffect(() => {
 		if (permit === null || selected_token == null) return;
-		if (permit.message.permitted.token !== selected) {
+		if (permit.message.permitted.token !== selected_token.token) {
 			console.log("invalidate permit from app");
 			set_permit(null);
 		}
@@ -115,46 +116,16 @@ function App() {
 					registry_tokens={num_tokens ?? null}
 					user_tokens={user_tokens ? user_tokens.length : null}
 				/>
-				<SelectToken
+
+				<ManageTokens
 					tokens={user_tokens}
 					selected_token={selected_token}
-					on_select={(token: Token) => set_selected(token.vault)}
+					permit={permit}
+					set_permit={set_permit}
+					set_selected={(token: Token) => set_selected(token.vault)}
 					busy={is_busy}
+					set_busy={set_busy}
 				/>
-				{needs_approval && (
-					<GrantApproval
-						token={selected_token}
-						busy={is_busy}
-						set_busy={set_busy}
-					/>
-				)}
-
-				{is_approved && has_token_balance && (
-					<SignPermit
-						token={selected_token}
-						spender={ypermit}
-						permit={permit}
-						set_permit={set_permit}
-						busy={is_busy}
-					/>
-				)}
-				{is_permitted && (
-					<MakeDeposit
-						token={selected_token}
-						permit={permit}
-						set_permit={set_permit}
-						busy={is_busy}
-						set_busy={set_busy}
-					/>
-				)}
-
-				{has_vault_balance && (
-					<MakeWithdraw
-						token={selected_token}
-						busy={is_busy}
-						set_busy={set_busy}
-					/>
-				)}
 
 				{(migrateable_vaults?.length ?? 0) > 0 && (
 					<MigrateVaults
