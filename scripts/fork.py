@@ -103,3 +103,5 @@ def main():
             amount = token.balanceOf(dev) // 2
             token.approve(vault, amount, sender=dev)
             vault.deposit(amount, sender=dev)
+
+    input("press enter to exit")

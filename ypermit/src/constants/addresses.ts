@@ -8,5 +8,5 @@ export const registries: Address[] = [
 export const latest_registry = registries[registries.length - 1];
 export const weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 export const ypermit = import.meta.env.DEV
-  ? "0x29023de63d7075b4cc2ce30b55f050f9c67548d4"
+  ? "0x59c7D03d2E9893FB7bAa89dA50a9452e1e9B8b90"
   : "0xC466BcF8C315827C3A8813a7f6D398Efd8023853";
