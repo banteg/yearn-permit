@@ -1,7 +1,11 @@
+import { registry_abi } from "@/constants/abi";
+import { registries } from "@/constants/addresses";
 import { cn } from "@/lib/utils";
+import type { Token } from "@/types";
 import { Text, Tooltip } from "@radix-ui/themes";
+import type { ReadContractReturnType } from "@wagmi/core";
 import { Rabbit } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContracts } from "wagmi";
 
 export function LoadingBunny({
 	animation,
@@ -35,17 +39,33 @@ export function DeadBunny() {
 }
 
 export function SupportedTokens({
-	registry_tokens,
+	user_query,
 	user_tokens,
-	is_error = false,
 }: {
-	registry_tokens: bigint | null;
-	user_tokens: number | null;
-	is_error: boolean;
+	user_query: ReadContractReturnType;
+	user_tokens?: Token[];
 }) {
 	const account = useAccount();
+	// read number of supported tokens
+	const registry_num_tokens = useReadContracts({
+		contracts: registries.map((registry) => ({
+			address: registry,
+			abi: registry_abi,
+			functionName: "numTokens",
+		})),
+	});
+	// useReadContracts stores error per result
+	const num_tokens_status = registry_num_tokens?.data?.[0]?.status;
+	const num_tokens =
+		num_tokens_status === "success"
+			? registry_num_tokens.data?.reduce(
+					(acc, val) => acc + (val.result as bigint),
+					0n,
+				)
+			: null;
+
 	// 0. error state
-	if (is_error)
+	if (user_query.isError)
 		return (
 			<Text size="5" color="red">
 				failed to connect <DeadBunny />
@@ -53,7 +73,7 @@ export function SupportedTokens({
 		);
 
 	// 1. loading from registry
-	if (registry_tokens === null)
+	if (num_tokens === null)
 		return (
 			<Text size="5" className="text-violet-500">
 				loading from registry… <LoadingBunny animation="animate-hop" />
@@ -63,7 +83,7 @@ export function SupportedTokens({
 	if (account.status === "disconnected") {
 		return (
 			<Text size="5">
-				<span>supports {registry_tokens.toString()} tokens, </span>
+				<span>supports {num_tokens?.toString()} tokens, </span>
 				<span className="text-violet-500">
 					connect wallet above <LoadingBunny animation="animate-wiggle" />
 				</span>
@@ -74,7 +94,7 @@ export function SupportedTokens({
 	if (user_tokens === null) {
 		return (
 			<Text size="5">
-				<span>supports {registry_tokens.toString()} tokens, </span>
+				<span>supports {num_tokens?.toString()} tokens, </span>
 				<span className="text-violet-500">
 					loading your tokens… <LoadingBunny animation="animate-hop" />
 				</span>
@@ -85,7 +105,7 @@ export function SupportedTokens({
 	return (
 		<>
 			<Text size="5">
-				supports {registry_tokens.toString()} tokens, you have {user_tokens}{" "}
+				supports {num_tokens?.toString()} tokens, you have {user_tokens?.length}{" "}
 				tokens
 			</Text>
 		</>

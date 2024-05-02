@@ -35,7 +35,6 @@ export function ManageTokens({
 		selected_token && selected_token.permit2_allowance >= maxUint96;
 	const has_token_balance = selected_token && selected_token.token_balance > 1n;
 	const is_depositable = permit !== null;
-	console.log(is_depositable, permit);
 	const is_withdrawable = selected_token && selected_token.vault_balance > 1n;
 
 	return (

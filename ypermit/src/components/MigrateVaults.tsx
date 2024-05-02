@@ -26,7 +26,6 @@ export function MigrateVaults({
 		() => tokens?.find((token) => token.vault === selected_token?.vault),
 		[tokens, selected_token],
 	);
-	console.log(migration_selected);
 
 	return (
 		<Flex gap="4" direction="column">

@@ -25,7 +25,7 @@ function App() {
 	const [is_busy, set_busy] = useState(false);
 
 	// everything needed to render the frontend is bundled in one call
-	const user_info = useReadContract({
+	const user_query = useReadContract({
 		address: ypermit,
 		abi: ypermit_abi,
 		functionName: "fetch_user_info",
@@ -33,47 +33,29 @@ function App() {
 		query: { retry: 0, enabled: !!account.address },
 	});
 
-	// read number of supported tokens
-	const registry_num_tokens = useReadContracts({
-		contracts: registries.map((registry) => ({
-			address: registry,
-			abi: registry_abi,
-			functionName: "numTokens",
-		})),
-	});
-	// useReadContracts stores error per result
-	const num_tokens_status = registry_num_tokens?.data?.[0]?.status;
-	const num_tokens =
-		num_tokens_status === "success"
-			? registry_num_tokens.data?.reduce(
-					(acc, val) => acc + (val.result as bigint),
-					0n,
-				)
-			: null;
-
 	// computed lists of tokens and vaults of user
 	const user_tokens: Token[] | undefined = useMemo(
 		() =>
-			user_info.data?.filter(
+			user_query.data?.filter(
 				(value) =>
 					value.latest &&
 					(value.token_balance > 1n || value.vault_balance > 1n),
 			),
-		[user_info.data],
+		[user_query.data],
 	);
 
 	const migrateable_vaults: Token[] | undefined = useMemo(
 		() =>
-			user_info.data?.filter(
+			user_query.data?.filter(
 				(value) => !value.latest && value.vault_balance > 1n,
 			),
-		[user_info.data],
+		[user_query.data],
 	);
 
 	// look up the latest token info from the vault address
 	const selected_token: Token | undefined = useMemo(
-		() => user_info.data?.find((token) => token.vault === selected),
-		[user_info.data, selected],
+		() => user_query.data?.find((token) => token.vault === selected),
+		[user_query.data, selected],
 	);
 
 	// invalidate permit by token address
@@ -94,12 +76,8 @@ function App() {
 		<Container maxWidth="40rem" m={{ initial: "0.5rem", sm: "0" }} pb="5rem">
 			<Flex direction="column" gap="4" className="">
 				<Logo />
-				{user_info.isError && <ErrorMessage error={user_info.error} />}
-				<SupportedTokens
-					registry_tokens={num_tokens ?? null}
-					user_tokens={user_tokens ? user_tokens.length : null}
-					is_error={num_tokens_status === "failure"}
-				/>
+				{user_query.isError && <ErrorMessage error={user_query.error} />}
+				<SupportedTokens user_query={user_query} user_tokens={user_tokens} />
 
 				<ManageTokens
 					tokens={user_tokens}
