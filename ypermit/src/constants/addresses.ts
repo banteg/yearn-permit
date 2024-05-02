@@ -1,4 +1,4 @@
-import { Address } from "viem";
+import type { Address } from "viem";
 
 export const permit2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 export const registries: Address[] = [
