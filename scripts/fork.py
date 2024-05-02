@@ -88,3 +88,18 @@ def main():
 
     balances = {token: balance for token, balance in zip(best_pools, call())}
     print("balances", balances)
+
+    # obtain some old vault tokens to test the migration flow
+    registry = Contract("0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804")
+    yfi = "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e"
+    usdc = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    for token in [yfi, usdc]:
+        token = Contract(token)
+        for vault_id in range(registry.numVaults(token)):
+            vault = Contract(registry.vaults(token, vault_id))
+            print(vault.apiVersion(), token.symbol(), vault)
+            gov = accounts.test_accounts[vault.governance()]
+            vault.setDepositLimit(2**256 - 1, sender=gov)
+            amount = token.balanceOf(dev) // 2
+            token.approve(vault, amount, sender=dev)
+            vault.deposit(amount, sender=dev)
