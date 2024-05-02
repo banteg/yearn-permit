@@ -1,5 +1,9 @@
 foundry:
   host: 127.0.0.1:9545
+  fork:
+    ethereum:
+      mainnet:
+        block_number: 19782400
 
 geth:
   ethereum:
