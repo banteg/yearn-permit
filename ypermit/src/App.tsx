@@ -1,19 +1,14 @@
-import { GrantApproval } from "@/components/GrantApproval";
 import { Logo } from "@/components/Header";
-import { MakeDeposit } from "@/components/MakeDeposit";
-import { MakeWithdraw } from "@/components/MakeWithdraw";
-import { SelectToken } from "@/components/SelectToken";
-import { SignPermit } from "@/components/SignPermit";
 import { SupportedTokens } from "@/components/SupportedTokens";
 import { registry_abi, ypermit_abi } from "@/constants/abi";
 import { registries, ypermit } from "@/constants/addresses";
 import type { Token } from "@/types";
-import { Container, Flex, Text } from "@radix-ui/themes";
+import { Container, Flex } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeartCrack } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
-import { type Address, maxUint96 } from "viem";
+import type { Address } from "viem";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { ManageTokens } from "./components/ManageTokens";
 import { MigrateVaults } from "./components/MigrateVaults";
@@ -74,17 +69,6 @@ function App() {
 		() => user_info.data?.find((token) => token.vault === selected),
 		[user_info.data, selected],
 	);
-
-	// ui steps
-	const is_approved =
-		selected_token && selected_token.permit2_allowance >= maxUint96;
-	const needs_approval = selected_token && !is_approved;
-	const is_permitted = permit !== null;
-	const has_token_balance =
-		!!selected_token && selected_token.token_balance > 1n;
-	const has_vault_balance =
-		!!selected_token && selected_token.vault_balance > 1n;
-	// const have_migrations = !!user_vaults?.length;
 
 	// invalidate permit by token address
 	useEffect(() => {

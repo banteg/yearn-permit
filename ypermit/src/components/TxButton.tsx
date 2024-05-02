@@ -54,7 +54,7 @@ export function TxButton({
 				loading: `<Strong>${
 					description ?? label
 				}</Strong> transaction submitted`,
-				success: (data) => {
+				success: () => {
 					return `<Strong>${
 						description ?? label
 					}</Strong> transaction confirmed`;
