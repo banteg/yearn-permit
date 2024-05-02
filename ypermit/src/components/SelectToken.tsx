@@ -48,7 +48,7 @@ export function SelectToken({
 	busy = false,
 }: {
 	tokens?: Token[];
-	selected_token: Token | null;
+	selected_token?: Token;
 	on_select: (token: Token) => void;
 	busy: boolean;
 }) {
@@ -64,7 +64,7 @@ export function SelectToken({
 	}
 
 	function is_selected(token: Token) {
-		return token.token === selected_token?.token;
+		return token.vault === selected_token?.vault;
 	}
 
 	return (

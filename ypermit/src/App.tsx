@@ -22,6 +22,7 @@ import type { Permit } from "./types";
 function App() {
 	// app state
 	const account = useAccount();
+	// track by vault address
 	const [selected, set_selected] = useState<Address | null>(null);
 	const [permit, set_permit] = useState<Permit | null>(null);
 	const [is_busy, set_busy] = useState(false);
@@ -67,9 +68,10 @@ function App() {
 		[user_info.data],
 	);
 
+	// look up the latest token info from the vault address
 	const selected_token: Token | undefined = useMemo(
-		() => user_tokens?.find((token) => token.token === selected),
-		[user_tokens, selected],
+		() => user_info.data?.find((token) => token.vault === selected),
+		[user_info.data, selected],
 	);
 
 	// ui steps
@@ -116,7 +118,7 @@ function App() {
 				<SelectToken
 					tokens={user_tokens}
 					selected_token={selected_token}
-					on_select={(token: Token) => set_selected(token.token)}
+					on_select={(token: Token) => set_selected(token.vault)}
 					busy={is_busy}
 				/>
 				{needs_approval && (
@@ -157,6 +159,8 @@ function App() {
 				{(migrateable_vaults?.length ?? 0) > 0 && (
 					<MigrateVaults
 						tokens={migrateable_vaults}
+						selected_token={selected_token}
+						set_selected={(token: Token) => set_selected(token.vault)}
 						busy={is_busy}
 						set_busy={set_busy}
 					/>
