@@ -1,8 +1,10 @@
 import { vault_abi } from "@/constants/abi";
 import type { Token } from "@/types";
 import { Code, Flex, Text } from "@radix-ui/themes";
+import { Construction } from "lucide-react";
 import { useMemo } from "react";
 import { ExplorerAddress } from "./ExplorerLink";
+import { MyCallout } from "./MyCallout";
 import { SelectToken } from "./SelectToken";
 import { TxButton } from "./TxButton";
 
@@ -29,6 +31,12 @@ export function MigrateVaults({
 	return (
 		<Flex gap="4" direction="column">
 			<Text size="5">migration available</Text>
+			<MyCallout
+				color="plum"
+				title="permit migrations are in development"
+				description="for now you can withdraw from outdated vaults"
+				icon={<Construction size="1.3rem" />}
+			/>
 			<SelectToken
 				tokens={tokens}
 				selected_token={selected_token}
