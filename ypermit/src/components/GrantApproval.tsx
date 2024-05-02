@@ -20,11 +20,10 @@ export function GrantApproval({
 	return (
 		<Flex direction="column" gap="4">
 			<MyCallout
-				color="red"
+				color="orange"
 				icon={<Snail size="1.3rem" />}
 				title={<Strong>{token.symbol} needs approval</Strong>}
-				description="approve permit2 once to get gasless approvals across all supported
-          contracts"
+				description="approve permit2 once to get gasless approvals across all supported contracts"
 			/>
 			<Flex gap="2" className="items-baseline">
 				<TxButton
