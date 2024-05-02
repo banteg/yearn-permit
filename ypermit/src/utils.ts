@@ -19,7 +19,6 @@ export function format_wei(
 ) {
   // format to significant digits while keeping integer precision
   const [integer_part, decimal_part] = formatUnits(value, decimals).split(".");
-  console.log(integer_part, decimal_part);
   digits = Math.max(integer_part.length, digits);
   return (Number(value) / 10 ** decimals).toLocaleString("en-US", {
     maximumSignificantDigits: Math.min(digits, 18),

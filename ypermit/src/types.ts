@@ -1,4 +1,4 @@
-import { Address } from "viem";
+import type { Address } from "viem";
 
 export interface Token {
   token: Address;
@@ -11,4 +11,14 @@ export interface Token {
   vault_api: string;
   vault_share_price: bigint;
   latest: boolean;
+}
+
+export interface Permit {
+  message: {
+    permitted: { token: Address; amount: bigint };
+    spender: Address;
+    nonce: bigint;
+    deadline: bigint;
+  };
+  signature: string;
 }
