@@ -11,6 +11,7 @@ interface MakeDepositProps {
 	token?: Token;
 	permit: Permit;
 	set_permit: (value: Permit | null) => void;
+	busy: boolean;
 	set_busy: (value: boolean) => void;
 }
 
@@ -18,6 +19,7 @@ export function MakeDeposit({
 	token,
 	permit,
 	set_permit,
+	busy,
 	set_busy,
 }: MakeDepositProps) {
 	const args = useDepositArgs(permit);
@@ -28,6 +30,7 @@ export function MakeDeposit({
 				label="deposit"
 				description={`${token.symbol} deposit`}
 				payload={args}
+				disabled={busy}
 				set_busy={set_busy}
 				cleanup={() => {
 					set_permit(null);

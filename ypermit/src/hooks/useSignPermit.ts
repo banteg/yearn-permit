@@ -3,16 +3,6 @@ import { Address } from "viem";
 import { useSignTypedData } from "wagmi";
 import { permit2 } from "../constants/addresses";
 
-export interface Permit {
-  message: {
-    permitted: { token: Address; amount: bigint };
-    spender: Address;
-    nonce: bigint;
-    deadline: bigint;
-  };
-  signature: string;
-}
-
 export function useSignPermit({ set_permit }: { set_permit: Function }) {
   const signer = useSignTypedData({
     mutation: {

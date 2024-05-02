@@ -1,6 +1,6 @@
 import { ypermit_abi } from "@/constants/abi";
+import { Permit } from "@/types";
 import { ypermit } from "../constants/addresses";
-import { Permit } from "./useSignPermit";
 
 export function useDepositArgs(permit: Permit) {
   const args = permit !== null && [
