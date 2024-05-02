@@ -22,7 +22,7 @@ export function SignPermit({
 	token: Token;
 	spender: Address;
 	permit: Permit | null;
-	set_permit: Function;
+	set_permit: (permit: Permit | null) => void;
 	busy: boolean;
 }) {
 	const [amount, set_amount] = useState("0");
@@ -71,7 +71,7 @@ export function SignPermit({
 		<Flex direction="column" gap="4">
 			{permit !== null ? (
 				<MyCallout
-					color="violet"
+					color="green"
 					icon={<Rabbit size="1.3rem" />}
 					title="have permit"
 					description="you are all set to deposit your tokens into a vault"
