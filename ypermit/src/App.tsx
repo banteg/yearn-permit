@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import type { Address } from "viem";
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { ErrorMessage } from "./components/ErrorMessage";
 import { ManageTokens } from "./components/ManageTokens";
 import { MigrateVaults } from "./components/MigrateVaults";
 import { MyCallout } from "./components/MyCallout";
@@ -40,10 +41,15 @@ function App() {
 			functionName: "numTokens",
 		})),
 	});
-	const num_tokens = registry_num_tokens.data?.reduce(
-		(acc, val) => acc + (val.result as bigint),
-		0n,
-	);
+	// useReadContracts stores error per result
+	const num_tokens_status = registry_num_tokens?.data?.[0]?.status;
+	const num_tokens =
+		num_tokens_status === "success"
+			? registry_num_tokens.data?.reduce(
+					(acc, val) => acc + (val.result as bigint),
+					0n,
+				)
+			: null;
 
 	// computed lists of tokens and vaults of user
 	const user_tokens: Token[] | undefined = useMemo(
@@ -88,17 +94,11 @@ function App() {
 		<Container maxWidth="40rem" m={{ initial: "0.5rem", sm: "0" }} pb="5rem">
 			<Flex direction="column" gap="4" className="">
 				<Logo />
-				{user_info.isError && (
-					<MyCallout
-						color="red"
-						icon={<HeartCrack />}
-						title={user_info.error.name}
-						description={user_info.error.message}
-					/>
-				)}
+				{user_info.isError && <ErrorMessage error={user_info.error} />}
 				<SupportedTokens
 					registry_tokens={num_tokens ?? null}
 					user_tokens={user_tokens ? user_tokens.length : null}
+					is_error={num_tokens_status === "failure"}
 				/>
 
 				<ManageTokens
