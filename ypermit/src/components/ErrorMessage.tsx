@@ -1,9 +1,9 @@
 import { Callout, Strong } from "@radix-ui/themes";
 import { HeartCrack } from "lucide-react";
 import { useState } from "react";
-import type { BaseError } from "wagmi";
+import type { ReadContractErrorType } from "viem";
 
-export function ErrorMessage({ error }: { error?: BaseError }) {
+export function ErrorMessage({ error }: { error?: ReadContractErrorType }) {
 	const [expand, set_expand] = useState(false);
 	if (!error) return;
 	return (

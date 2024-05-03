@@ -1,19 +1,17 @@
 import { Logo } from "@/components/Header";
 import { SupportedTokens } from "@/components/SupportedTokens";
-import { registry_abi, ypermit_abi } from "@/constants/abi";
-import { registries, ypermit } from "@/constants/addresses";
+import { ypermit_abi } from "@/constants/abi";
+import { ypermit } from "@/constants/addresses";
 import type { Token } from "@/types";
 import { Container, Flex } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { HeartCrack } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import type { Address } from "viem";
-import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { ErrorMessage } from "./components/ErrorMessage";
 import { ManageTokens } from "./components/ManageTokens";
 import { MigrateVaults } from "./components/MigrateVaults";
-import { MyCallout } from "./components/MyCallout";
 import type { Permit } from "./types";
 
 function App() {

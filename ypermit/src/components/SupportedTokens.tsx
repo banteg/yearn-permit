@@ -3,9 +3,12 @@ import { registries } from "@/constants/addresses";
 import { cn } from "@/lib/utils";
 import type { Token } from "@/types";
 import { Text, Tooltip } from "@radix-ui/themes";
-import type { ReadContractReturnType } from "@wagmi/core";
 import { Rabbit } from "lucide-react";
-import { useAccount, useReadContracts } from "wagmi";
+import {
+	type UseReadContractReturnType,
+	useAccount,
+	useReadContracts,
+} from "wagmi";
 
 export function LoadingBunny({
 	animation,
@@ -42,7 +45,7 @@ export function SupportedTokens({
 	user_query,
 	user_tokens,
 }: {
-	user_query: ReadContractReturnType;
+	user_query: UseReadContractReturnType;
 	user_tokens?: Token[];
 }) {
 	const account = useAccount();
