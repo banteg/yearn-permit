@@ -47,7 +47,8 @@ export function SupportedTokens({
 }) {
 	const account = useAccount();
 	// read number of supported tokens
-	const registry_num_tokens = useReadContracts({
+	const registry_query = useReadContracts({
+		allowFailure: false,
 		contracts: registries.map((registry) => ({
 			address: registry,
 			abi: registry_abi,
@@ -55,20 +56,16 @@ export function SupportedTokens({
 		})),
 	});
 	// useReadContracts stores error per result
-	const num_tokens_status = registry_num_tokens?.data?.[0]?.status;
-	const num_tokens =
-		num_tokens_status === "success"
-			? registry_num_tokens.data?.reduce(
-					(acc, val) => acc + (val.result as bigint),
-					0n,
-				)
-			: null;
+	const num_tokens = registry_query.isSuccess
+		? // @ts-ignore
+			registry_query.data?.reduce((acc, val) => acc + val, 0n)
+		: null;
 
 	// 0. error state
-	if (user_query.isError)
+	if (user_query.isError || registry_query.isError)
 		return (
 			<Text size="5" color="red">
-				failed to connect <DeadBunny />
+				failed to load <DeadBunny />
 			</Text>
 		);
 
@@ -91,7 +88,7 @@ export function SupportedTokens({
 		);
 	}
 	// 3. loading user balances
-	if (user_tokens === null) {
+	if (!user_tokens) {
 		return (
 			<Text size="5">
 				<span>supports {num_tokens?.toString()} tokens, </span>
