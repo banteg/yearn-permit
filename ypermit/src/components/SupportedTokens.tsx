@@ -2,13 +2,14 @@ import { registry_abi } from "@/constants/abi";
 import { registries } from "@/constants/addresses";
 import { cn } from "@/lib/utils";
 import type { Token } from "@/types";
-import { Text, Tooltip } from "@radix-ui/themes";
+import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import {
 	type UseReadContractReturnType,
 	useAccount,
 	useReadContracts,
 } from "wagmi";
+import { ErrorMessage } from "./ErrorMessage";
 
 export function LoadingBunny({
 	animation,
@@ -52,6 +53,7 @@ export function SupportedTokens({
 	// read number of supported tokens
 	const registry_query = useReadContracts({
 		allowFailure: false,
+		query: { retry: 0 },
 		contracts: registries.map((registry) => ({
 			address: registry,
 			abi: registry_abi,
@@ -67,9 +69,15 @@ export function SupportedTokens({
 	// 0. error state
 	if (user_query.isError || registry_query.isError)
 		return (
-			<Text size="5" color="red">
-				failed to load <DeadBunny />
-			</Text>
+			<Flex direction="column" gap="4">
+				{user_query.isError && <ErrorMessage error={user_query.error} />}
+				{registry_query.isError && (
+					<ErrorMessage error={registry_query.error} />
+				)}
+				<Text size="5" color="red">
+					failed to load <DeadBunny />
+				</Text>
+			</Flex>
 		);
 
 	// 1. loading from registry

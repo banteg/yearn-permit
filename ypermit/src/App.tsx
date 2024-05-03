@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import type { Address } from "viem";
 import { useAccount, useReadContract } from "wagmi";
-import { ErrorMessage } from "./components/ErrorMessage";
 import { ManageTokens } from "./components/ManageTokens";
 import { MigrateVaults } from "./components/MigrateVaults";
 import type { Permit } from "./types";
@@ -74,7 +73,6 @@ function App() {
 		<Container maxWidth="40rem" m={{ initial: "0.5rem", sm: "0" }} pb="5rem">
 			<Flex direction="column" gap="4" className="">
 				<Logo />
-				{user_query.isError && <ErrorMessage error={user_query.error} />}
 				<SupportedTokens user_query={user_query} user_tokens={user_tokens} />
 
 				<ManageTokens
