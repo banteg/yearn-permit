@@ -1,7 +1,7 @@
 import { vault_abi } from "@/constants/abi";
 import type { Token } from "@/types";
 import { from_wei, to_wei } from "@/utils";
-import { Button, Code, Flex, Text } from "@radix-ui/themes";
+import { Code, Flex, Text } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
 import { erc20Abi } from "viem";
@@ -21,7 +21,6 @@ export function MakeDepositAtomic({ token, busy, set_busy }: MakeDepositProps) {
 	const [amount, set_amount] = useState("0");
 
 	useEffect(() => {
-		console.log("effect");
 		set_amount(from_wei(token.token_balance, token.decimals));
 	}, [token.token_balance]);
 
@@ -47,20 +46,19 @@ export function MakeDepositAtomic({ token, busy, set_busy }: MakeDepositProps) {
 	const payload = {
 		contracts: [
 			{
-				address: token?.token,
+				address: token.token,
 				abi: erc20Abi,
 				functionName: "approve",
 				args: [token?.vault, deposit_amount],
 			},
 			{
-				address: token?.vault,
+				address: token.vault,
 				abi: vault_abi,
 				functionName: "deposit",
 				args: [deposit_amount],
 			},
 		],
 	};
-	console.log(payload);
 
 	if (!token) return;
 	return (

@@ -1,13 +1,7 @@
-import { Button, Text } from "@radix-ui/themes";
+import { Button } from "@radix-ui/themes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-	serialize,
-	useCall,
-	useWaitForTransactionReceipt,
-	useWriteContract,
-} from "wagmi";
 import { useCallsStatus, useWriteContracts } from "wagmi/experimental";
 
 export function TxButtonAtomic({
@@ -46,14 +40,14 @@ export function TxButtonAtomic({
 			},
 		},
 	});
-	const {
-		isLoading,
-		isSuccess,
-		data: calls_status,
-	} = useCallsStatus({
-		id: bundle_id,
+	const { data: calls_status } = useCallsStatus({
+		id: bundle_id as string,
+		query: {
+			enabled: !!bundle_id,
+			refetchInterval: (data) =>
+				data.state.data?.status === "CONFIRMED" ? false : 2000,
+		},
 	});
-	console.log("status", bundle_id, calls_status);
 
 	function toast_broadcast(txn_hash: string) {
 		toast.promise(
@@ -82,27 +76,24 @@ export function TxButtonAtomic({
 	}
 
 	useEffect(() => {
-		if (!isSuccess) return;
+		if (calls_status?.status !== "CONFIRMED") return;
 		set_busy(false);
 		!!cleanup && cleanup();
 		query_client.invalidateQueries();
 		// sets the promise toast to success
 		!!resolver && resolver();
-	}, [isSuccess]);
+	}, [calls_status?.status]);
 
 	return (
-		<>
-			<Button
-				onClick={() => {
-					set_busy(true);
-					// @ts-ignore
-					writeContracts(payload);
-				}}
-				disabled={isPending || isLoading || disabled}
-			>
-				{label}
-			</Button>
-			<Text size="1">{serialize(calls_status)}</Text>
-		</>
+		<Button
+			onClick={() => {
+				set_busy(true);
+				// @ts-ignore
+				writeContracts(payload);
+			}}
+			disabled={isPending || calls_status?.status === "PENDING" || disabled}
+		>
+			{label}
+		</Button>
 	);
 }
