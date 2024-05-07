@@ -8,8 +8,10 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import type { Address } from "viem";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useChainId, useReadContract } from "wagmi";
+import { useCapabilities } from "wagmi/experimental";
 import { ManageTokens } from "./components/ManageTokens";
+import { ManageTokensAtomic } from "./components/ManageTokensAtomic";
 import { MigrateVaults } from "./components/MigrateVaults";
 import type { Permit } from "./types";
 
@@ -17,6 +19,10 @@ function App() {
 	// app state
 	const account = useAccount();
 	const ypermit = useYpermit();
+	const chain_id = useChainId();
+	const capabilities = useCapabilities();
+	const supports_atomic_batch =
+		capabilities.isSuccess && capabilities.data[chain_id].atomicBatch.supported;
 	// track by vault address
 	const [selected, set_selected] = useState<Address | null>(null);
 	const [permit, set_permit] = useState<Permit | null>(null);
@@ -76,15 +82,25 @@ function App() {
 				<Logo />
 				<SupportedTokens user_query={user_query} user_tokens={user_tokens} />
 
-				<ManageTokens
-					tokens={user_tokens}
-					selected_token={selected_token}
-					permit={permit}
-					set_permit={set_permit}
-					set_selected={(token: Token) => set_selected(token.vault)}
-					busy={is_busy}
-					set_busy={set_busy}
-				/>
+				{supports_atomic_batch ? (
+					<ManageTokensAtomic
+						tokens={user_tokens}
+						selected_token={selected_token}
+						set_selected={(token: Token) => set_selected(token.vault)}
+						busy={is_busy}
+						set_busy={set_busy}
+					/>
+				) : (
+					<ManageTokens
+						tokens={user_tokens}
+						selected_token={selected_token}
+						permit={permit}
+						set_permit={set_permit}
+						set_selected={(token: Token) => set_selected(token.vault)}
+						busy={is_busy}
+						set_busy={set_busy}
+					/>
+				)}
 
 				{(migrateable_vaults?.length ?? 0) > 0 && (
 					<MigrateVaults
