@@ -1,6 +1,6 @@
 import { TxButton } from "@/components/TxButton";
 import { ypermit_abi } from "@/constants/abi";
-import { ypermit } from "@/constants/addresses";
+import { useYpermit } from "@/constants/addresses";
 import type { Permit, Token } from "@/types";
 import { from_wei } from "@/utils";
 import { Code, Flex } from "@radix-ui/themes";
@@ -21,6 +21,7 @@ export function MakeDeposit({
 	busy,
 	set_busy,
 }: MakeDepositProps) {
+	const ypermit = useYpermit();
 	const args = permit !== null && [
 		permit.message.permitted.token,
 		permit.message.permitted.amount,

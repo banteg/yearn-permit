@@ -6,7 +6,7 @@ import { Button, Code, Flex, Text } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Address } from "viem";
-import { ypermit } from "../constants/addresses";
+import { useYpermit } from "../constants/addresses";
 import { ExplorerAddress } from "./ExplorerLink";
 import { InputAmount } from "./InputAmount";
 import { MyCallout } from "./MyCallout";
@@ -25,6 +25,7 @@ export function SignPermit({
 	set_permit: (permit: Permit | null) => void;
 	busy: boolean;
 }) {
+	const ypermit = useYpermit();
 	const [amount, set_amount] = useState("0");
 	const signer = useSignPermit({ set_permit });
 	const deadline = BigInt((new Date().valueOf() / 1000 + 86400).toFixed(0));

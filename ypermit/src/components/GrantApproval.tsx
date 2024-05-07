@@ -1,5 +1,5 @@
 import { erc20_abi, erc20_abi_overrides } from "@/constants/abi";
-import { permit2 } from "@/constants/addresses";
+import { PERMIT2 } from "@/constants/addresses";
 import type { Token } from "@/types";
 import { Code, Flex, Strong } from "@radix-ui/themes";
 import { Snail } from "lucide-react";
@@ -33,7 +33,7 @@ export function GrantApproval({
 						abi: erc20_abi_overrides[token.token] ?? erc20_abi,
 						address: token.token,
 						functionName: "approve",
-						args: [permit2, maxUint256],
+						args: [PERMIT2, maxUint256],
 					}}
 					disabled={busy}
 					set_busy={set_busy}
@@ -43,7 +43,7 @@ export function GrantApproval({
 						{token.symbol}
 					</ExplorerAddress>
 					.approve(
-					<ExplorerAddress address={permit2}>permit2</ExplorerAddress>,{" "}
+					<ExplorerAddress address={PERMIT2}>permit2</ExplorerAddress>,{" "}
 					infinite)
 				</Code>
 			</Flex>

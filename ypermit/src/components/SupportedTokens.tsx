@@ -1,5 +1,5 @@
 import { registry_abi } from "@/constants/abi";
-import { registries } from "@/constants/addresses";
+import { useRegistries } from "@/constants/addresses";
 import { cn } from "@/lib/utils";
 import type { Token } from "@/types";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
@@ -50,6 +50,7 @@ export function SupportedTokens({
 	user_tokens?: Token[];
 }) {
 	const account = useAccount();
+	const registries = useRegistries();
 	// read number of supported tokens
 	const registry_query = useReadContracts({
 		allowFailure: false,

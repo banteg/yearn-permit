@@ -1,5 +1,5 @@
 import { registry_abi, vault_abi } from "@/constants/abi";
-import { latest_registry } from "@/constants/addresses";
+import { useRegistries } from "@/constants/addresses";
 import { cn } from "@/lib/utils";
 import type { Token } from "@/types";
 import { format_wei, from_wei } from "@/utils";
@@ -39,6 +39,8 @@ export function TokenCard({
 			: 0;
 
 	// show migration path for old vaults
+	const registries = useRegistries();
+	const latest_registry = registries[registries.length - 1];
 	const latest_vault = useReadContract({
 		address: latest_registry,
 		abi: registry_abi,

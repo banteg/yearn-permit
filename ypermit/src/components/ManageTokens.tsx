@@ -1,4 +1,4 @@
-import { ypermit } from "@/constants/addresses";
+import { useYpermit } from "@/constants/addresses";
 import type { Permit, Token } from "@/types";
 import { useMemo } from "react";
 import { maxUint96 } from "viem";
@@ -27,6 +27,7 @@ export function ManageTokens({
 	busy,
 	set_busy,
 }: ManageTokensProps) {
+	const ypermit = useYpermit();
 	const selected_here = useMemo(
 		() => tokens?.find((token) => token.vault === selected_token?.vault),
 		[tokens, selected_token],

@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Header";
 import { SupportedTokens } from "@/components/SupportedTokens";
 import { ypermit_abi } from "@/constants/abi";
-import { ypermit } from "@/constants/addresses";
+import { useYpermit } from "@/constants/addresses";
 import type { Token } from "@/types";
 import { Container, Flex } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -16,6 +16,7 @@ import type { Permit } from "./types";
 function App() {
 	// app state
 	const account = useAccount();
+	const ypermit = useYpermit();
 	// track by vault address
 	const [selected, set_selected] = useState<Address | null>(null);
 	const [permit, set_permit] = useState<Permit | null>(null);
