@@ -1,9 +1,12 @@
 import { Callout, Strong } from "@radix-ui/themes";
+import type { ReadContractsErrorType } from "@wagmi/core";
 import { HeartCrack } from "lucide-react";
 import { useState } from "react";
 import type { ReadContractErrorType } from "viem";
 
-export function ErrorMessage({ error }: { error?: ReadContractErrorType }) {
+export function ErrorMessage({
+	error,
+}: { error: ReadContractErrorType | ReadContractsErrorType }) {
 	const [expand, set_expand] = useState(false);
 	if (!error) return;
 	return (
@@ -19,6 +22,7 @@ export function ErrorMessage({ error }: { error?: ReadContractErrorType }) {
 				<Strong>{error.name}</Strong>
 			</Callout.Text>
 			<Callout.Text className="whitespace-pre-wrap break-all">
+				{/* @ts-ignore */}
 				{expand ? error.message : error.shortMessage}
 			</Callout.Text>
 		</Callout.Root>

@@ -1,7 +1,6 @@
 import { Box, Button, Flex, Text } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
 import {
-	serialize,
 	useAccount,
 	useChainId,
 	useConnect,
@@ -60,6 +59,7 @@ export function Logo() {
 						color="cyan"
 						size="1"
 						key={chain.name}
+						// @ts-ignore
 						onClick={() => switchChain({ chainId: chain.id })}
 					>
 						{chain.name.toLowerCase()}
