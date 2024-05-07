@@ -66,7 +66,7 @@ export function Logo() {
 					</Button>
 				))}
 			</Flex>
-			<Text size="1" truncate>
+			<Text size="1" truncate style={{ maxWidth: "10rem" }}>
 				{ens.data ? ens.data : account.address}
 			</Text>
 		</Flex>
