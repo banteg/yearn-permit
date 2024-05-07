@@ -2,10 +2,6 @@ import { createConfig, http } from "wagmi";
 import { mainnet, sepolia } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
 
-const rpc = import.meta.env.DEV
-	? import.meta.env.VITE_RPC_URL ?? "http://127.0.0.1:9545"
-	: undefined;
-
 export const config = createConfig({
 	chains: [mainnet, sepolia],
 	connectors: [
@@ -14,7 +10,7 @@ export const config = createConfig({
 		// walletConnect({ projectId: import.meta.env.VITE_WC_PROJECT_ID }),
 	],
 	transports: {
-		[mainnet.id]: http(rpc, { timeout: 60000 }),
+		[mainnet.id]: http(),
 		[sepolia.id]: http(),
 	},
 });

@@ -21,7 +21,8 @@ export const REGISTRIES_PROD: Record<number, Address[]> = {
 
 export function useYpermit() {
 	const chain_id = useChainId();
-	return import.meta.env.DEV ? YPERMIT_DEV : YPERMIT_PROD[chain_id];
+	return YPERMIT_PROD[chain_id];
+	// return import.meta.env.DEV ? YPERMIT_DEV : YPERMIT_PROD[chain_id];
 }
 
 export function useRegistries() {

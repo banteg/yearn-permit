@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Header";
 import { SupportedTokens } from "@/components/SupportedTokens";
 import { ypermit_abi } from "@/constants/abi";
-import { useYpermit } from "@/constants/addresses";
+import { useRegistries, useYpermit } from "@/constants/addresses";
 import type { Token } from "@/types";
 import { Container, Flex } from "@radix-ui/themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
