@@ -22,8 +22,11 @@ export function ErrorMessage({
 				<Strong>{error.name}</Strong>
 			</Callout.Text>
 			<Callout.Text className="whitespace-pre-wrap break-all">
-				{/* @ts-ignore */}
-				{expand ? error.message : error.shortMessage}
+				{expand
+					? error.message
+					: "shortMessage" in error
+						? error.shortMessage
+						: error.message}
 			</Callout.Text>
 		</Callout.Root>
 	);
