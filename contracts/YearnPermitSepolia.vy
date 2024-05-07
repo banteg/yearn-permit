@@ -59,7 +59,7 @@ registry: immutable(Registry)
 @external
 def __init__():
     permit2 = Permit2(0x000000000022D473030F116dDEE9F6B43aC78BA3)
-    registry = Registry(...)
+    registry = Registry(0x002934477d18Ec84F59973fA3532A747D4096180)
 
 @external
 def deposit(token: address, amount: uint256, deadline: uint256, signature: Bytes[65]) -> uint256:
