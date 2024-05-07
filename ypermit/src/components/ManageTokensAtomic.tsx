@@ -1,9 +1,12 @@
 import { useYpermit } from "@/constants/addresses";
 import type { Token } from "@/types";
+import { from_wei, to_wei } from "@/utils";
+import { Text } from "@radix-ui/themes";
 import { useMemo } from "react";
+import { InputAmount } from "./InputAmount";
 import { MakeDepositAtomic } from "./MakeDepositAtomic";
 import { MakeWithdraw } from "./MakeWithdraw";
-import { SelectToken } from "./SelectToken";
+import { SelectToken, TokenLogo } from "./SelectToken";
 
 type ManageTokensAtomicProps = {
 	tokens?: Token[];
@@ -20,7 +23,6 @@ export function ManageTokensAtomic({
 	busy,
 	set_busy,
 }: ManageTokensAtomicProps) {
-	const ypermit = useYpermit();
 	const selected_here = useMemo(
 		() => tokens?.find((token) => token.vault === selected_token?.vault),
 		[tokens, selected_token],
