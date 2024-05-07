@@ -1,18 +1,18 @@
-import { TxButton } from "@/components/TxButton";
-import { ypermit_abi } from "@/constants/abi";
-import { useRegistries, useYpermit } from "@/constants/addresses";
-import type { Permit, Token } from "@/types";
+import { vault_abi } from "@/constants/abi";
+import type { Token } from "@/types";
 import { from_wei, to_wei } from "@/utils";
-import { Button, Card, Code, Flex, Text } from "@radix-ui/themes";
-import { Construction, Rabbit, Rocket } from "lucide-react";
+import { Button, Code, Flex, Text } from "@radix-ui/themes";
+import { Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
+import { erc20Abi } from "viem";
 import { ExplorerAddress } from "./ExplorerLink";
 import { InputAmount } from "./InputAmount";
 import { MyCallout } from "./MyCallout";
 import { TokenLogo } from "./SelectToken";
+import { TxButtonAtomic } from "./TxButtonAtomic";
 
 interface MakeDepositProps {
-	token?: Token;
+	token: Token;
 	busy: boolean;
 	set_busy: (value: boolean) => void;
 }
@@ -44,6 +44,24 @@ export function MakeDepositAtomic({ token, busy, set_busy }: MakeDepositProps) {
 
 	const deposit_amount = to_wei(amount, token?.decimals);
 
+	const payload = {
+		contracts: [
+			{
+				address: token?.token,
+				abi: erc20Abi,
+				functionName: "approve",
+				args: [token?.vault, deposit_amount],
+			},
+			{
+				address: token?.vault,
+				abi: vault_abi,
+				functionName: "deposit",
+				args: [deposit_amount],
+			},
+		],
+	};
+	console.log(payload);
+
 	if (!token) return;
 	return (
 		<Flex gap="4" direction="column" className="items-baseline">
@@ -64,7 +82,13 @@ export function MakeDepositAtomic({ token, busy, set_busy }: MakeDepositProps) {
 			/>
 
 			<Flex gap="2" className="items-baseline">
-				<Button>deposit</Button>
+				<TxButtonAtomic
+					label="deposit"
+					description={`${token.symbol} deposit`}
+					payload={payload}
+					disabled={busy}
+					set_busy={set_busy}
+				/>
 				<Code truncate>
 					<ExplorerAddress address={token.vault}>
 						yv{token.symbol}
