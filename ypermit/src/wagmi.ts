@@ -1,6 +1,6 @@
 import { createConfig, http } from "wagmi";
 import { baseSepolia, mainnet, sepolia } from "wagmi/chains";
-import { coinbaseWallet, injected } from "wagmi/connectors";
+import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
 export const config = createConfig({
   chains: [mainnet, baseSepolia],
@@ -10,7 +10,7 @@ export const config = createConfig({
       appName: "bunny yearn",
       appChainIds: [baseSepolia.id, sepolia.id],
     }),
-    // walletConnect({ projectId: import.meta.env.VITE_WC_PROJECT_ID }),
+    walletConnect({ projectId: import.meta.env.VITE_WC_PROJECT_ID }),
   ],
   transports: {
     [mainnet.id]: http(),

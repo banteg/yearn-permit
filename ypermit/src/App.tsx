@@ -102,8 +102,8 @@ function App() {
             set_busy={set_busy}
           />
         )}
-        <ReactQueryDevtools />
       </Flex>
+      <ReactQueryDevtools />
       <Toaster richColors toastOptions={{ duration: 10000 }} />
     </Container>
   );
