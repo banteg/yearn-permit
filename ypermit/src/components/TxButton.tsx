@@ -1,3 +1,4 @@
+import { useExplorerLink } from "@/hooks/useExplorerLink";
 import { Button } from "@radix-ui/themes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ export function TxButton({
   cleanup?: () => void;
 }) {
   const query_client = useQueryClient();
+  const explorer = useExplorerLink();
   const [resolver, set_resolver] = useState<(() => (value: unknown) => void) | null>(null);
   const {
     data: txn_hash,
@@ -57,7 +59,7 @@ export function TxButton({
         action: {
           label: "view",
           onClick: () => {
-            window.open(`https://etherscan.io/tx/${txn_hash}`, "_blank");
+            window.open(`${explorer}/tx/${txn_hash}`, "_blank");
           },
         },
       },
