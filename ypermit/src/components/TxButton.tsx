@@ -76,9 +76,9 @@ export function TxButton({
   return (
     <Button
       onClick={() => {
-        set_busy(true);
         // @ts-ignore
         writeContract(payload);
+        set_busy(true);
       }}
       disabled={isPending || isLoading || disabled}
     >
