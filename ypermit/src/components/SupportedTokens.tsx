@@ -73,6 +73,7 @@ export function SupportedTokens({
 			<Flex direction="column" gap="4">
 				{user_query.isError && <ErrorMessage error={user_query.error} />}
 				{registry_query.isError && (
+					// @ts-ignore
 					<ErrorMessage error={registry_query.error} />
 				)}
 				<Text size="5" color="red">
