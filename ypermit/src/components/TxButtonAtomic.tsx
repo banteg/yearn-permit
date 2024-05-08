@@ -80,9 +80,9 @@ export function TxButtonAtomic({
   return (
     <Button
       onClick={() => {
-        set_busy(true);
         // @ts-ignore
         writeContracts(payload);
+        set_busy(true);
       }}
       disabled={isPending || calls_status?.status === "PENDING" || disabled}
     >
