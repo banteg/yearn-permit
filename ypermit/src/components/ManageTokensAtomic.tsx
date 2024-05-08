@@ -1,7 +1,9 @@
+import { useMintableToken } from "@/constants/addresses";
 import type { Token } from "@/types";
 import { useMemo } from "react";
 import { MakeDepositAtomic } from "./MakeDepositAtomic";
 import { MakeWithdraw } from "./MakeWithdraw";
+import { MintToken } from "./MintToken";
 import { SelectToken } from "./SelectToken";
 
 type ManageTokensAtomicProps = {
@@ -23,6 +25,7 @@ export function ManageTokensAtomic({
 		() => tokens?.find((token) => token.vault === selected_token?.vault),
 		[tokens, selected_token],
 	);
+	const mintable_token = useMintableToken();
 	const is_depositable = selected_token && selected_token.token_balance > 1n;
 	const is_withdrawable = selected_token && selected_token.vault_balance > 1n;
 
@@ -51,6 +54,10 @@ export function ManageTokensAtomic({
 						/>
 					)}
 				</>
+			)}
+			{mintable_token && (
+				// @ts-ignore
+				<MintToken token={mintable_token} busy={busy} set_busy={set_busy} />
 			)}
 		</>
 	);

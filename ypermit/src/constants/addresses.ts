@@ -21,6 +21,10 @@ export const REGISTRIES_PROD: Record<number, Address[]> = {
 	[baseSepolia.id]: ["0x6A99E07Cdec5a81eE0E5Da2189669F8563432A9a"],
 };
 
+export const TEST_TOKENS: Record<number, Address> = {
+	[baseSepolia.id]: "0x5E59Ff9f8F33bA898906aEB73E8c206072929760",
+};
+
 export function useYpermit() {
 	const chain_id = useChainId();
 	return YPERMIT_PROD[chain_id];
@@ -30,4 +34,9 @@ export function useYpermit() {
 export function useRegistries() {
 	const chain_id = useChainId();
 	return REGISTRIES_PROD[chain_id];
+}
+
+export function useMintableToken() {
+	const chain_id = useChainId();
+	return { token: TEST_TOKENS[chain_id], symbol: "YFI", decimals: 18 };
 }

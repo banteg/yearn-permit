@@ -2501,7 +2501,7 @@ export const vault_abi = [
 	},
 ] as const;
 
-const erc20_mint_abi = [
+export const erc20_mint_abi = [
 	{
 		anonymous: false,
 		inputs: [
