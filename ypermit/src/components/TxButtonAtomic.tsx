@@ -35,6 +35,7 @@ export function TxButtonAtomic({
       onSuccess(data) {
         // tx broadcasted
         toast_broadcast(data);
+        set_busy(true);
       },
     },
   });
@@ -82,7 +83,6 @@ export function TxButtonAtomic({
       onClick={() => {
         // @ts-ignore
         writeContracts(payload);
-        set_busy(true);
       }}
       disabled={isPending || calls_status?.status === "PENDING" || disabled}
     >
