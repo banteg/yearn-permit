@@ -22,13 +22,18 @@ export function TxButton({
 }) {
   const query_client = useQueryClient();
   const explorer = useExplorerLink();
-  const [resolver, set_resolver] = useState<(() => (value: unknown) => void) | null>(null);
+  const [resolver, set_resolver] = useState<
+    (() => (value: unknown) => void) | null
+  >(null);
   const {
     data: txn_hash,
     isPending,
     writeContract,
   } = useWriteContract({
     mutation: {
+      onMutate() {
+        set_busy(true);
+      },
       onError(error) {
         // signature rejected or gas estimation failed
         toast.error(error.name, { description: error.message });
@@ -62,7 +67,7 @@ export function TxButton({
             window.open(`${explorer}/tx/${txn_hash}`, "_blank");
           },
         },
-      },
+      }
     );
   }
 
@@ -77,11 +82,8 @@ export function TxButton({
 
   return (
     <Button
-      onClick={() => {
-        // @ts-ignore
-        writeContract(payload);
-        set_busy(true);
-      }}
+      // @ts-ignore
+      onClick={() => writeContract(payload)}
       disabled={isPending || isLoading || disabled}
     >
       {label}

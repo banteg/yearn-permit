@@ -3,7 +3,7 @@ import type { Token } from "@/types";
 import { from_wei, to_wei } from "@/utils";
 import { Code, Flex, Text } from "@radix-ui/themes";
 import { Rabbit } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { erc20Abi } from "viem";
 import { ExplorerAddress } from "./ExplorerLink";
 import { InputAmount } from "./InputAmount";
@@ -43,22 +43,25 @@ export function MakeDepositAtomic({ token, busy, set_busy }: MakeDepositProps) {
 
   const deposit_amount = to_wei(amount, token?.decimals);
 
-  const payload = {
-    contracts: [
-      {
-        address: token.token,
-        abi: erc20Abi,
-        functionName: "approve",
-        args: [token?.vault, deposit_amount],
-      },
-      {
-        address: token.vault,
-        abi: vault_abi,
-        functionName: "deposit",
-        args: [deposit_amount],
-      },
-    ],
-  };
+  const payload = useMemo(
+    () => ({
+      contracts: [
+        {
+          address: token.token,
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [token?.vault, deposit_amount],
+        },
+        {
+          address: token.vault,
+          abi: vault_abi,
+          functionName: "deposit",
+          args: [deposit_amount],
+        },
+      ],
+    }),
+    [token, deposit_amount],
+  );
 
   if (!token) return;
   return (

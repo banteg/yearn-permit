@@ -2,6 +2,7 @@ import { erc20_mint_abi } from "@/constants/abi";
 import type { Token } from "@/types";
 import { to_wei } from "@/utils";
 import { Code, Flex, Text } from "@radix-ui/themes";
+import { useMemo } from "react";
 import { useAccount } from "wagmi";
 import { ExplorerAddress } from "./ExplorerLink";
 import { TokenLogo } from "./SelectToken";
@@ -16,12 +17,15 @@ interface MintTokenProps {
 export function MintToken({ token, busy, set_busy }: MintTokenProps) {
   const account = useAccount();
   const mint_amount = "100";
-  const payload = {
-    address: token.token,
-    abi: erc20_mint_abi,
-    functionName: "mint",
-    args: [account.address, to_wei(mint_amount, token.decimals)],
-  };
+  const payload = useMemo(
+    () => ({
+      address: token.token,
+      abi: erc20_mint_abi,
+      functionName: "mint",
+      args: [account.address, to_wei(mint_amount, token.decimals)],
+    }),
+    [token, account.address],
+  );
 
   if (!token) return;
   return (
