@@ -24,5 +24,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </Theme>
       </QueryClientProvider>
     </WagmiProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

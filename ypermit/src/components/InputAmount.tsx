@@ -11,12 +11,7 @@ export function InputAmount({
 }) {
   return (
     <Box>
-      <TextField.Root
-        size="3"
-        className="w-60"
-        value={amount}
-        onChange={(e) => set_amount(e.target.value)}
-      >
+      <TextField.Root size="3" className="w-60" value={amount} onChange={(e) => set_amount(e.target.value)}>
         <TextField.Slot side="right" px="1">
           <Button onClick={() => set_amount("max")} disabled={busy}>
             max

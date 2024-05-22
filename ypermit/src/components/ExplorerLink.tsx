@@ -1,6 +1,7 @@
+import { useExplorerLink } from "@/hooks/useExplorerLink";
 import { Link } from "@radix-ui/themes";
-import { ReactNode } from "react";
-import { Address } from "viem";
+import type { ReactNode } from "react";
+import type { Address } from "viem";
 
 export function ExplorerAddress({
   address,
@@ -9,12 +10,10 @@ export function ExplorerAddress({
   address: Address;
   children: ReactNode;
 }) {
+  const explorer = useExplorerLink();
+
   return (
-    <Link
-      href={`https://etherscan.io/address/${address}`}
-      target="_blank"
-      color="violet"
-    >
+    <Link href={`${explorer}/address/${address}`} target="_blank" color="violet">
       {children}
     </Link>
   );

@@ -1,9 +1,10 @@
 import { toast } from "sonner";
 import { Address } from "viem";
-import { useSignTypedData } from "wagmi";
-import { permit2 } from "../constants/addresses";
+import { useChainId, useSignTypedData } from "wagmi";
+import { PERMIT2 } from "../constants/addresses";
 
 export function useSignPermit({ set_permit }: { set_permit: Function }) {
+  const chain_id = useChainId();
   const signer = useSignTypedData({
     mutation: {
       onSuccess(signature, variables) {
@@ -16,18 +17,12 @@ export function useSignPermit({ set_permit }: { set_permit: Function }) {
     },
   });
 
-  function sign_permit(
-    token: Address,
-    spender: Address,
-    amount: bigint,
-    nonce: bigint,
-    deadline: bigint
-  ) {
+  function sign_permit(token: Address, spender: Address, amount: bigint, nonce: bigint, deadline: bigint) {
     signer.signTypedData({
       domain: {
         name: "Permit2",
-        chainId: 1n,
-        verifyingContract: permit2,
+        chainId: BigInt(chain_id),
+        verifyingContract: PERMIT2,
       },
       types: {
         PermitTransferFrom: [
