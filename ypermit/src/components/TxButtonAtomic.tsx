@@ -1,11 +1,11 @@
 import { useExplorerLink } from "@/hooks/useExplorerLink";
 import { Button } from "@radix-ui/themes";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useCallsStatus, useWriteContracts } from "wagmi/experimental";
 
-export function TxButton({
+export function TxButtonAtomic({
   label,
   description,
   payload,
@@ -22,34 +22,36 @@ export function TxButton({
 }) {
   const query_client = useQueryClient();
   const explorer = useExplorerLink();
-  const [resolver, set_resolver] = useState<
-    (() => (value: unknown) => void) | null
-  >(null);
+  const [resolver, set_resolver] = useState<(() => (value: unknown) => void) | null>(null);
+  const tx_hash = useRef<string | undefined>(undefined);
   const {
-    data: txn_hash,
+    data: bundle_id,
     isPending,
-    writeContract,
-  } = useWriteContract({
+    writeContracts,
+  } = useWriteContracts({
     mutation: {
-      onMutate() {
-        set_busy(true);
-      },
       onError(error) {
         // signature rejected or gas estimation failed
         toast.error(error.name, { description: error.message });
         set_busy(false);
       },
-      onSuccess(data) {
+      onSuccess() {
         // tx broadcasted
-        toast_broadcast(data);
+        toast_broadcast();
+        set_busy(true);
+        tx_hash.current = undefined;
       },
     },
   });
-  const { isLoading, isSuccess } = useWaitForTransactionReceipt({
-    hash: txn_hash,
+  const { data: calls_status } = useCallsStatus({
+    id: bundle_id as string,
+    query: {
+      enabled: !!bundle_id,
+      refetchInterval: (data) => (data.state.data?.status === "CONFIRMED" ? false : 2000),
+    },
   });
 
-  function toast_broadcast(txn_hash: string) {
+  function toast_broadcast() {
     toast.promise(
       new Promise((resolve) => {
         // save to resolve from the effect when we get a receipt
@@ -64,27 +66,31 @@ export function TxButton({
         action: {
           label: "view",
           onClick: () => {
-            window.open(`${explorer}/tx/${txn_hash}`, "_blank");
+            tx_hash.current ? window.open(`${explorer}/tx/${tx_hash.current}`, "_blank") : null;
           },
         },
-      }
+      },
     );
   }
 
   useEffect(() => {
-    if (!isSuccess) return;
+    if (calls_status?.status !== "CONFIRMED") return;
+    tx_hash.current = calls_status.receipts?.[0].transactionHash;
+    console.log("got tx hash", tx_hash.current);
     set_busy(false);
     !!cleanup && cleanup();
     query_client.invalidateQueries();
     // sets the promise toast to success
     !!resolver && resolver();
-  }, [isSuccess]);
+  }, [calls_status?.status]);
 
   return (
     <Button
-      // @ts-ignore
-      onClick={() => writeContract(payload)}
-      disabled={isPending || isLoading || disabled}
+      onClick={() => {
+        // @ts-ignore
+        writeContracts(payload);
+      }}
+      disabled={isPending || calls_status?.status === "PENDING" || disabled}
     >
       {label}
     </Button>

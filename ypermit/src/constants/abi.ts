@@ -24,9 +24,7 @@ export const permit2_abi = [
   { inputs: [], name: "InvalidSigner", type: "error" },
   { inputs: [], name: "LengthMismatch", type: "error" },
   {
-    inputs: [
-      { internalType: "uint256", name: "signatureDeadline", type: "uint256" },
-    ],
+    inputs: [{ internalType: "uint256", name: "signatureDeadline", type: "uint256" }],
     name: "SignatureExpired",
     type: "error",
   },
@@ -995,9 +993,7 @@ export const registry_abi = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "address", name: "_newRegistry", type: "address" },
-    ],
+    inputs: [{ internalType: "address", name: "_newRegistry", type: "address" }],
     name: "updateReleaseRegistry",
     outputs: [],
     stateMutability: "nonpayable",
@@ -2498,5 +2494,129 @@ export const vault_abi = [
     name: "nonces",
     inputs: [{ name: "arg0", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
+
+export const erc20_mint_abi = [
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "sender", type: "address" },
+      { indexed: true, name: "receiver", type: "address" },
+      { indexed: false, name: "amount", type: "uint256" },
+    ],
+    name: "Transfer",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "owner", type: "address" },
+      { indexed: true, name: "spender", type: "address" },
+      { indexed: false, name: "amount", type: "uint256" },
+    ],
+    name: "Approval",
+    type: "event",
+  },
+  {
+    inputs: [
+      { name: "name", type: "string" },
+      { name: "symbol", type: "string" },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    inputs: [
+      { name: "receiver", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "transfer",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "receiver", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "transferFrom",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "receiver", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "mint",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "amount", type: "uint256" }],
+    name: "burn",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "symbol",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "arg0", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "arg0", type: "address" },
+      { name: "arg1", type: "address" },
+    ],
+    name: "allowance",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
   },
 ] as const;
